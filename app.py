@@ -1,5 +1,5 @@
 # =============================================================================
-# APPLICATION WEB STREAMLIT - ANALYSEUR MICROBIOLOGIQUE
+# APPLICATION WEB STREAMLIT - ANALYSEUR MICROBIOLOGIQUE (VERSION CLOUD GROQ)
 # =============================================================================
 
 import streamlit as st
@@ -9,6 +9,9 @@ import os
 from datetime import datetime
 import plotly.express as px
 import plotly.graph_objects as go
+import requests
+import pdfplumber
+import tempfile
 
 # Import des modules locaux
 from database import (
@@ -24,15 +27,134 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Titre et logo
-st.title("🔬 Analyseur Microbiologique Intelligent")
-st.markdown("---")
+# =============================================================================
+# CONFIGURATION IA (GROQ CLOUD)
+# =============================================================================
+
+GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+API_KEY = os.environ.get("API_KEY", "")
+MODEL_NAME = os.environ.get("MODEL_NAME", "llama-3.3-70b-versatile")
+
+def appeler_ia(system_prompt, user_prompt):
+    """Appelle l'API Groq (Llama 3) au lieu d'Ollama local"""
+    
+    if not API_KEY:
+        st.error("⚠️ Clé API manquante. Configurez les secrets dans Streamlit Cloud.")
+        return None
+    
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "model": MODEL_NAME,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
+        "response_format": {"type": "json_object"},
+        "temperature": 0.3
+    }
+    
+    try:
+        response = requests.post(GROQ_API_URL, json=payload, headers=headers, timeout=60)
+        response.raise_for_status()
+        content = response.json()['choices'][0]['message']['content']
+        return json.loads(content)
+    except Exception as e:
+        st.error(f"Erreur IA : {e}")
+        return None
+
+def extraire_texte_pdf(file):
+    """Extrait le texte d'un fichier PDF uploadé"""
+    texte = ""
+    try:
+        with pdfplumber.open(file) as pdf:
+            for page in pdf.pages:
+                texte_page = page.extract_text()
+                if texte_page:
+                    texte += texte_page + "\n"
+        return texte
+    except Exception as e:
+        return None
+
+def analyser_rapport(texte_rapport):
+    """Analyse un rapport avec l'IA"""
+    
+    system_prompt = """Tu es un expert en microbiologie alimentaire et en extraction de données.
+Ton but est d'extraire les informations du rapport d'analyse au format JSON strict.
+Ne devine rien, extrais uniquement ce qui est écrit dans le document."""
+
+    user_prompt = f"""
+Analyse ce rapport d'analyse microbiologique et retourne UNIQUEMENT un JSON avec cette structure :
+{{
+    "dossier_id": "le numéro du dossier analytique",
+    "date_prelevement": "la date du prélèvement",
+    "site": "le nom du site client",
+    "rayon": "le rayon ou secteur",
+    "produit": "le nom du produit analysé",
+    "statut_global": "CONFORME ou NON CONFORME",
+    "commentaire_lab": "le texte explicatif sous STATUT GLOBAL",
+    "analyses": [
+        {{
+            "parametre": "nom du microorganisme",
+            "resultat": "la valeur observée",
+            "limite": "la limite réglementaire",
+            "evaluation": "Satisfaisant, Non conforme, ou CRITIQUE"
+        }}
+    ]
+}}
+
+TEXTE DU RAPPORT :
+{texte_rapport}
+"""
+
+    return appeler_ia(system_prompt, user_prompt)
+
+def generer_plan_action(donnees_rapport):
+    """Génère un plan d'action si Non-Conformité"""
+    
+    microbes_nc = []
+    for analyse in donnees_rapport.get('analyses', []):
+        eval_upper = analyse.get('evaluation', '').upper()
+        if 'NON CONFORME' in eval_upper or 'CRITIQUE' in eval_upper or 'DÉFAUT' in eval_upper:
+            microbes_nc.append(f"{analyse.get('parametre')} ({analyse.get('evaluation')})")
+    
+    microbes_texte = ", ".join(microbes_nc) if microbes_nc else "Non précisé"
+
+    system_prompt = """Tu es le Responsable Qualité d'une grande surface alimentaire.
+Tu dois proposer un plan d'actions correctives immédiates et mettre à jour 
+le plan de surveillance pour le mois prochain suite à une non-conformité.
+Réponds UNIQUEMENT au format JSON."""
+
+    user_prompt = f"""
+Voici une Non-Conformité (NC) détectée sur un de nos produits :
+- Produit : {donnees_rapport.get('produit', 'Inconnu')}
+- Rayon : {donnees_rapport.get('rayon', 'Inconnu')}
+- Microbes en défaut : {microbes_texte}
+- Commentaire du labo : {donnees_rapport.get('commentaire_lab', 'Non précisé')}
+
+Génère un JSON avec cette structure :
+{{
+    "niveau_risque": "FAIBLE, MOYEN, ÉLEVÉ ou CRITIQUE",
+    "actions_immediates": [
+        {{"titre": "titre court de l'action", "description": "description détaillée"}}
+    ],
+    "plan_mois_suivant": [
+        {{"titre": "titre court de l'analyse", "description": "description détaillée"}}
+    ],
+    "investigation_amont": "liste des points à vérifier en amont (fournisseurs, process, environnement)"
+}}
+"""
+
+    return appeler_ia(system_prompt, user_prompt)
 
 # Initialiser la base de données
 init_database()
 
 # =============================================================================
-# BARRE LATÉRALE - Navigation
+# BARRE LATÉRALE
 # =============================================================================
 
 st.sidebar.title("🧭 Navigation")
@@ -42,6 +164,12 @@ page = st.sidebar.radio(
 )
 
 st.sidebar.markdown("---")
+
+if API_KEY:
+    st.sidebar.success("✅ IA connectée (Groq)")
+else:
+    st.sidebar.error("⚠️ Clé API manquante")
+
 st.sidebar.info("""
 **Système IA avec Mémoire**
 - Analyse automatique des PDFs
@@ -57,18 +185,12 @@ st.sidebar.info("""
 if page == "📊 Tableau de bord":
     st.header("📊 Vue d'ensemble de la qualité")
     
-    # Récupérer les statistiques
     stats = get_statistiques_generales()
     
-    # KPIs en haut de page
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        st.metric(
-            label="Total Analyses",
-            value=stats['total_analyses'],
-            delta="Cumul"
-        )
+        st.metric(label="Total Analyses", value=stats['total_analyses'])
     
     with col2:
         st.metric(
@@ -79,17 +201,11 @@ if page == "📊 Tableau de bord":
         )
     
     with col3:
-        # Produits en surveillance renforcée
         plan = get_plan_surveillance_actuel()
         nb_renforce = sum(1 for p in plan if p['statut_surveillance'] != 'NORMAL')
-        st.metric(
-            label="Surveillance Renforcée",
-            value=nb_renforce,
-            delta="Produits à risque"
-        )
+        st.metric(label="Surveillance Renforcée", value=nb_renforce, delta="Produits à risque")
     
     with col4:
-        # Dernier incident
         historique = get_historique_analyses(1)
         if historique:
             dernier = historique[0]
@@ -103,11 +219,10 @@ if page == "📊 Tableau de bord":
     
     st.markdown("---")
     
-    # Graphiques
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader(" NC par Rayon")
+        st.subheader("🚨 NC par Rayon")
         if stats['nc_par_rayon']:
             fig_rayon = px.bar(
                 x=list(stats['nc_par_rayon'].keys()),
@@ -134,7 +249,6 @@ if page == "📊 Tableau de bord":
         else:
             st.info("Aucun microbe détecté")
     
-    # Alertes actives
     st.markdown("---")
     st.subheader("⚠️ Alertes Actives (Surveillance Renforcée)")
     
@@ -146,24 +260,22 @@ if page == "📊 Tableau de bord":
                     'CRISE': '🔴',
                     'TRES RENFORCE': '🟠',
                     'RENFORCE': '🟡'
-                }.get(item['statut_surveillance'], '⚪')
+                }.get(item['statut_surveillance'], '')
                 
                 with st.expander(f"{couleur} {item['rayon']} - {item['produit'] or 'Tous produits'}"):
                     st.write(f"**Statut :** {item['statut_surveillance']}")
                     st.write(f"**Fréquence recommandée :** {item['frequence_mois']} analyses/mois")
                     st.write(f"**Incidents (3 mois) :** {item['nb_incidents_3mois']}")
-                    st.write(f"**Dernier incident :** {datetime.fromisoformat(item['dernier_incident']).strftime('%d/%m/%Y') if item['dernier_incident'] else 'Jamais'}")
     else:
         st.success("✅ Aucune alerte active - Tous les produits en surveillance normale")
 
 # =============================================================================
-# PAGE 2: ANALYSER DES PDFs
+# PAGE 2: ANALYSER DES PDFs (VERSION COMPLÈTE)
 # =============================================================================
 
 elif page == "📤 Analyser des PDFs":
     st.header("📤 Analyse de rapports microbiologiques")
     
-    # Upload de fichiers
     uploaded_files = st.file_uploader(
         "Choisissez des fichiers PDF",
         type=['pdf'],
@@ -177,46 +289,109 @@ elif page == "📤 Analyser des PDFs":
         if st.button("🚀 Lancer l'analyse", type="primary"):
             progress_bar = st.progress(0)
             status_text = st.empty()
-            
-            # Créer un dossier temporaire pour les PDFs uploadés
-            os.makedirs("uploads_temp", exist_ok=True)
+            results_container = st.container()
             
             resultats = []
             
             for i, uploaded_file in enumerate(uploaded_files):
                 status_text.text(f"Traitement : {uploaded_file.name} ({i+1}/{len(uploaded_files)})")
                 
-                # Sauvegarder le fichier temporairement
-                chemin_temp = os.path.join("uploads_temp", uploaded_file.name)
-                with open(chemin_temp, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
+                # Extraire le texte
+                texte = extraire_texte_pdf(uploaded_file)
                 
-                # Ici, tu appellerais ton script d'analyse
-                # Pour l'instant, on simule
-                # TODO: Importer et utiliser les fonctions du script principal
+                if not texte:
+                    st.warning(f"❌ Impossible de lire {uploaded_file.name}")
+                    continue
                 
-                # Mise à jour de la barre de progression
+                # Analyser avec l'IA
+                donnees = analyser_rapport(texte)
+                
+                if not donnees:
+                    st.warning(f"⚠️ IA n'a pas pu analyser {uploaded_file.name}")
+                    continue
+                
+                # Vérifier NC
+                statut = donnees.get('statut_global', '')
+                is_nc = 'NON CONFORME' in statut.upper()
+                
+                plan_action = None
+                
+                if is_nc:
+                    plan_action = generer_plan_action(donnees)
+                
+                # Sauvegarder
+                resultat_complet = {
+                    "fichier": uploaded_file.name,
+                    "date_analyse": datetime.now().isoformat(),
+                    "donnees_rapport": donnees,
+                    "plan_action": plan_action,
+                    "non_conforme": is_nc
+                }
+                resultats.append(resultat_complet)
+                sauvegarder_analyse(resultat_complet, plan_action)
+                
                 progress_bar.progress((i + 1) / len(uploaded_files))
             
             status_text.text("✅ Analyse terminée !")
-            st.success(f"{len(uploaded_files)} rapport(s) analysé(s) avec succès !")
+            st.success(f"{len(resultats)} rapport(s) analysé(s) avec succès !")
             
-            # Nettoyer les fichiers temporaires
-            import shutil
-            shutil.rmtree("uploads_temp")
-            
-            # Afficher un résumé
-            st.markdown("### 📊 Résumé de l'analyse")
-            st.info("""
-            **Fonctionnalité complète disponible**
-            
-            Cette page intègre :
-            - Lecture automatique des PDFs
-            - Détection des non-conformités par IA
-            - Génération de plans d'action
-            - Sauvegarde dans la base de données
-            - Mise à jour automatique du plan de surveillance
-            """)
+            # Afficher les résultats
+            with results_container:
+                st.markdown("---")
+                st.subheader("📊 Résultats")
+                
+                for res in resultats:
+                    donnees = res['donnees_rapport']
+                    is_nc = res['non_conforme']
+                    
+                    icon = "🚨" if is_nc else "✅"
+                    st.markdown(f"### {icon} {donnees.get('produit', 'N/A')}")
+                    
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.write(f"**Rayon :** {donnees.get('rayon', 'N/A')}")
+                        st.write(f"**Statut :** {donnees.get('statut_global', 'N/A')}")
+                    with col2:
+                        st.write(f"**Date :** {donnees.get('date_prelevement', 'N/A')}")
+                        st.write(f"**Dossier :** {donnees.get('dossier_id', 'N/A')}")
+                    
+                    # Afficher les analyses
+                    st.markdown("**🔬 Analyses :**")
+                    for analyse in donnees.get('analyses', []):
+                        eval_upper = analyse.get('evaluation', '').upper()
+                        if 'CRITIQUE' in eval_upper or 'DÉFAUT' in eval_upper:
+                            icone = "🔴"
+                        elif 'NON CONFORME' in eval_upper:
+                            icone = "🟠"
+                        else:
+                            icone = "🟢"
+                        
+                        st.write(f"- {icone} **{analyse.get('parametre')}** : {analyse.get('resultat')} (Limite: {analyse.get('limite')}) - *{analyse.get('evaluation')}*")
+                    
+                    # Afficher le plan d'action si NC
+                    if is_nc and res['plan_action']:
+                        plan = res['plan_action']
+                        st.markdown(f"**⚠️ Niveau de risque :** {plan.get('niveau_risque', 'N/A')}")
+                        
+                        st.markdown("**🛑 Actions immédiates :**")
+                        for action in plan.get('actions_immediates', []):
+                            if isinstance(action, dict):
+                                st.write(f"- **{action.get('titre')}** : {action.get('description')}")
+                            else:
+                                st.write(f"- {action}")
+                        
+                        st.markdown("**📅 Plan mois suivant :**")
+                        for action in plan.get('plan_mois_suivant', []):
+                            if isinstance(action, dict):
+                                st.write(f"- ➕ **{action.get('titre')}** : {action.get('description')}")
+                            else:
+                                st.write(f"- ➕ {action}")
+                        
+                        investigation = plan.get('investigation_amont', '')
+                        if investigation:
+                            st.markdown(f"**🔍 Investigation amont :** {investigation}")
+                    
+                    st.markdown("---")
 
 # =============================================================================
 # PAGE 3: PLAN DE SURVEILLANCE
@@ -233,10 +408,8 @@ elif page == "📅 Plan de Surveillance":
     plan = get_plan_surveillance_actuel()
     
     if plan:
-        # Créer un DataFrame pour affichage
         df_plan = pd.DataFrame(plan)
         
-        # Mapper les statuts avec des couleurs
         statut_colors = {
             'NORMAL': '🟢',
             'RENFORCE': '🟡',
@@ -244,11 +417,6 @@ elif page == "📅 Plan de Surveillance":
             'CRISE': '🔴'
         }
         
-        df_plan['Statut'] = df_plan['statut_surveillance'].map(statut_colors)
-        df_plan['Fréquence/mois'] = df_plan['frequence_mois']
-        df_plan['Incidents (3 mois)'] = df_plan['nb_incidents_3mois']
-        
-        # Afficher par statut
         for statut in ['CRISE', 'TRES RENFORCE', 'RENFORCE', 'NORMAL']:
             df_filtre = df_plan[df_plan['statut_surveillance'] == statut]
             if not df_filtre.empty:
@@ -264,12 +432,9 @@ elif page == "📅 Plan de Surveillance":
                         with col3:
                             dernier = datetime.fromisoformat(row['dernier_incident']).strftime('%d/%m/%Y') if row['dernier_incident'] else 'Jamais'
                             st.metric("Dernier incident", dernier)
-                        
-                        st.info(f"**Dernière mise à jour :** {datetime.fromisoformat(row['date_mise_a_jour']).strftime('%d/%m/%Y à %H:%M')}")
     else:
         st.info("📭 Aucun plan de surveillance enregistré. Analysez vos premiers PDFs pour commencer.")
     
-    # Recommandations générales
     st.markdown("---")
     st.subheader("💡 Recommandations du mois")
     
@@ -300,7 +465,6 @@ elif page == "📅 Plan de Surveillance":
 elif page == "📜 Historique":
     st.header("📜 Historique complet des analyses")
     
-    # Filtres
     col1, col2 = st.columns(2)
     with col1:
         filtre_rayon = st.multiselect(
@@ -313,14 +477,11 @@ elif page == "📜 Historique":
             options=["Toutes", "Conformes", "Non-conformes"]
         )
     
-    # Récupérer l'historique
     historique = get_historique_analyses(limit=100)
     
     if historique:
-        # Convertir en DataFrame
         df = pd.DataFrame(historique)
         
-        # Appliquer les filtres
         if filtre_rayon:
             df = df[df['rayon'].isin(filtre_rayon)]
         
@@ -329,12 +490,8 @@ elif page == "📜 Historique":
         elif filtre_statut == "Non-conformes":
             df = df[df['non_conforme'] == 1]
         
-        # Afficher le tableau
         st.dataframe(
-            df[[
-                'date_analyse_systeme', 'rayon', 'produit', 
-                'statut_global', 'niveau_risque'
-            ]],
+            df[['date_analyse_systeme', 'rayon', 'produit', 'statut_global', 'niveau_risque']],
             use_container_width=True,
             column_config={
                 "date_analyse_systeme": "Date",
@@ -345,7 +502,6 @@ elif page == "📜 Historique":
             }
         )
         
-        # Export
         csv = df.to_csv(index=False, encoding='utf-8-sig')
         st.download_button(
             label="📥 Télécharger en CSV",
@@ -354,7 +510,6 @@ elif page == "📜 Historique":
             mime="text/csv"
         )
         
-        # Détails d'une analyse
         st.markdown("---")
         st.subheader("🔍 Détails d'une analyse")
         
@@ -365,11 +520,9 @@ elif page == "📜 Historique":
             idx = liste_analyses.index(choix)
             analyse = historique[idx]
             
-            # Afficher les données complètes
             donnees = json.loads(analyse['donnees_completes'])
             st.json(donnees)
             
-            # Afficher le plan d'action si existe
             if analyse['plan_action']:
                 plan = json.loads(analyse['plan_action'])
                 st.markdown("### 📋 Plan d'action généré")
@@ -384,7 +537,7 @@ elif page == "📜 Historique":
 st.markdown("---")
 st.markdown("""
 <div style='text-align: center; color: gray;'>
-    <p>🔬 Analyseur Microbiologique Intelligent avec IA | Powered by Qwen + Streamlit</p>
+    <p>🔬 Analyseur Microbiologique Intelligent avec IA | Powered by Groq (Llama 3) + Streamlit</p>
     <p>Système adaptatif avec mémoire - Mise à jour automatique des plans de surveillance</p>
 </div>
 """, unsafe_allow_html=True)
