@@ -1,0 +1,373 @@
+[
+  {
+    "fichier": "premium_lab_report_boucherie.pdf",
+    "date_analyse": "2026-06-24T15:45:13.350637",
+    "donnees_rapport": {
+      "dossier_id": "AN-2026-4401",
+      "date_prelevement": "22 Juin 2026",
+      "site": "Hypermarche Lyon-Centre",
+      "rayon": "Boucherie Traditionnelle",
+      "produit": "Viande Hachée de Bœuf Cru (Préparation sur Place)",
+      "statut_global": "NON CONFORME",
+      "commentaire_lab": "Mise en évidence d'une non-conformité majeure au titre du Règlement (CE) n° 2073/2005 (Critères de sécurité sanitaire). Présence détectée de Salmonella typhimurium dans 25g. On note également une dérive hygiénique sur le critère de procédé (Entérobactéries).",
+      "analyses": [
+        {
+          "parametre": "Flore aérobie mésophile",
+          "resultat": "3,2 x 10⁶ UFC/g",
+          "limite": "5,0 x 10⁶ UFC/g",
+          "evaluation": "Satisfaisant"
+        },
+        {
+          "parametre": "Entérobactéries (30°C)",
+          "resultat": "4,8 x 10³ UFC/g",
+          "limite": "1,0 x 10³ UFC/g",
+          "evaluation": "Non conforme"
+        },
+        {
+          "parametre": "Escherichia coli",
+          "resultat": "45 UFC/g",
+          "limite": "50 UFC/g",
+          "evaluation": "Satisfaisant"
+        },
+        {
+          "parametre": "Staphylocoques à coagulase positive",
+          "resultat": "80 UFC/g",
+          "limite": "100 UFC/g",
+          "evaluation": "Satisfaisant"
+        },
+        {
+          "parametre": "Salmonella typhimurium",
+          "resultat": "Présence dans 25g",
+          "limite": "Absence / 25g",
+          "evaluation": "CRITIQUE (KO)"
+        }
+      ]
+    },
+    "plan_action": {
+      "niveau_risque": "CRITIQUE",
+      "actions_immediates": [
+        {
+          "titre": "Arrêt de la production",
+          "description": "Arrêter immédiatement l'production du lot concerné et des lots similaires jusqu'à évaluation."
+        },
+        {
+          "titre": "Rappel des produits commercialisés",
+          "description": "Mettre en place un rappel systématique des produits identifiés dans les zones de vente pour éviter toute consommation potentielle."
+        },
+        {
+          "titre": "Isolation des produits concernés",
+          "description": "Isoler physiquement le produit non-conforme et les lots similaires, et ne les distribuer que après réception d'une notification officielle de levée de l'alerte."
+        }
+      ],
+      "plan_mois_suivant": [
+        {
+          "titre": "Révision des protocoles de contrôle",
+          "description": "Revoir et mettre à jour les protocoles d'hygiène, de nettoyage et de désinfection du lieu de production. Assurer la formation renforcée des employés."
+        },
+        {
+          "titre": "Analyse des processus de fabrication",
+          "description": "Évaluer les processus de fabrication pour identifier et corriger les points de dérive hygiénique potentiels. Mettre en place un système d'alerte automatique pour détecter toute perturbation."
+        },
+        {
+          "titre": "Amélioration du contrôle qualité",
+          "description": "Augmenter la fréquence des contrôles microbiologiques, notamment pour les critères de Salmonella et Entérobactéries. Intensifier le contrôle des fournisseurs et des sources d'approvisionnement."
+        }
+      ],
+      "investigation_amont": [
+        "Vérification des normes d'hygiène du fournisseur de viande",
+        "Évaluation des conditions de transport et de stockage",
+        "Analyse des processus de préparation et de conditionnement en interne"
+      ]
+    },
+    "non_conforme": true
+  },
+  {
+    "fichier": "premium_lab_report_fruits_legumes.pdf",
+    "date_analyse": "2026-06-24T15:45:30.100930",
+    "donnees_rapport": {
+      "dossier_id": "AN-2026-4405",
+      "date_prelevement": "22 Juin 2026",
+      "site": "Hypermarche Lyon-Centre",
+      "rayon": "Fruits & Légumes (Prêt à Période)",
+      "produit": "Barquette de Carottes Râpées (Fraîchement préparées)",
+      "statut_global": "NON CONFORME",
+      "commentaire_lab": "Non-conformité prononcée sur le critère indikateur d'hygiène des procédés (Entérobactéries). La charge globale témoigne d'un nettoyage/désinfection insuffisant du matériel de découpe ou des matières premières.",
+      "analyses": [
+        {
+          "parametre": "Flore aérobies mésophile",
+          "resultat": "8,5 x 10⁶ UFC/g",
+          "limite": "5,0 x 10⁶ UFC/g",
+          "evaluation": "Dépassement"
+        },
+        {
+          "parametre": "Entérobactéries",
+          "resultat": "5,4 x 10⁴ UFC/g",
+          "limite": "1,0 x 10³ UFC/g",
+          "evaluation": "NON CONFORME"
+        },
+        {
+          "parametre": "Escherichia coli",
+          "resultat": "20 UFC/g",
+          "limite": "100 UFC/g",
+          "evaluation": "Satisfaisant"
+        },
+        {
+          "parametre": "Listeria monocytogenes",
+          "resultat": "Absence dans 25g",
+          "limite": "/ 25g",
+          "evaluation": "Satisfaisant"
+        }
+      ]
+    },
+    "plan_action": {
+      "niveau_risque": "MOYEN",
+      "actions_immediates": [
+        {
+          "titre": "Nettoyage immédiat du matériel",
+          "description": "Effectuer un nettoyage approfondi et une désinfection du matériel de découpe utilisé pour la préparation des carottes râpées, ainsi que du lieu de stockage."
+        },
+        {
+          "titre": "Évaluation de l'état des matières premières",
+          "description": "Vérifier l'état sanitaire des carottes fraîchement reçues et éliminer tout produit manifestement non conforme avant sa préparation."
+        }
+      ],
+      "plan_mois_suivant": [
+        {
+          "titre": "Analyse de la chaîne de gestion",
+          "description": "Effectuer une analyse détaillée des processus de réception, de stockage et de découpe pour identifier les points critiques potentiels et mettre en place des contrôles renforcés."
+        },
+        {
+          "titre": "Formation du personnel",
+          "description": "Organiser un atelier de formation pour le personnel impliqué dans la préparation des carottes râpées sur les bonnes pratiques d'hygiène et l'importance du nettoyage et de la désinfection."
+        }
+      ],
+      "investigation_amont": [
+        "Examiner la qualité des fournisseurs de carottes",
+        "Vérifier le respect des procédures de stockage par les prestataires",
+        "Inspecter l'état de propreté du lieu de réception et de stockage des carottes"
+      ]
+    },
+    "non_conforme": true
+  },
+  {
+    "fichier": "premium_lab_report_maree.pdf",
+    "date_analyse": "2026-06-24T15:45:47.638914",
+    "donnees_rapport": {
+      "dossier_id": "AN-2026-4402",
+      "date_prelevement": "22 Juin 2026",
+      "site": "Hypermarche Lyon-Centre",
+      "rayon": "Marée & Poissonnerie",
+      "produit": "Filets de Saumon Atlantique Frais (Salmo salar)",
+      "statut_global": "NON CONFORME",
+      "commentaire_lab": "Isolement et identification de Listeria monocytogenes. Le produit ne répond pas aux critères de sécurité requis pour les denrées prêtes à être consommées ou transformées sans traitement thermique assainissant immédiat.",
+      "analyses": [
+        {
+          "parametre": "Flore aérobie mésophile",
+          "resultat": "1,2 x 10⁵ UFC/g",
+          "limite": "1,0 x 10⁶ UFC/g",
+          "evaluation": "Satisfaisant"
+        },
+        {
+          "parametre": "Escherichia coli",
+          "resultat": "< 10 UFC/g",
+          "limite": "10 UFC/g",
+          "evaluation": "Satisfaisant"
+        },
+        {
+          "parametre": "Anaérobies sulfito-réducteurs (46°C)",
+          "resultat": "< 10 UFC/g",
+          "limite": "100 UFC/g",
+          "evaluation": "Satisfaisant"
+        },
+        {
+          "parametre": "Listeria monocytogenes",
+          "resultat": "Présence dans 25g",
+          "limite": "Absence / 25g",
+          "evaluation": "CRITIQUE (KO)"
+        }
+      ]
+    },
+    "plan_action": {
+      "niveau_risque": "CRITIQUE",
+      "actions_immediates": [
+        {
+          "titre": "Arrêt immédiat de la vente et du stockage",
+          "description": "Tous les lots concernés doivent être immédiatement retirés des rayons et des stocks. Un affichage clair doit informer le public sur l'arrêt de vente."
+        },
+        {
+          "titre": "Notification aux clients",
+          "description": "Fournir aux clients qui ont acheté ce lot une notification écrite les informant du problème et leur donnant la possibilité d'échanger ou de retourner le produit pour un remboursement."
+        },
+        {
+          "titre": "Nettoyage des surfaces contaminées",
+          "description": "Toutes les surfaces de contact (rayons, équipements) qui ont été en contact avec ce lot doivent être nettoyées et désinfectées selon les protocoles standards."
+        }
+      ],
+      "plan_mois_suivant": [
+        {
+          "titre": "Analyse des processus",
+          "description": "Une revue approfondie de tous les aspects du processus de réception, de stockage et de préparation des filets de saumon doit être effectuée pour identifier tout échec potentiel dans la chaîne d'approvisionnement."
+        },
+        {
+          "titre": "Formation du personnel",
+          "description": "Tous les employés impliqués dans le stockage et la préparation des denrées alimentaires doivent recevoir une formation supplémentaire sur l'importance de l'hygiène et des mesures de sécurité alimentaire."
+        }
+      ],
+      "investigation_amont": [
+        "Évaluation des pratiques de conditionnement et d'emballage par le fournisseur",
+        "Examen du processus de traçabilité pour identifier tout point faible",
+        "Assessment of storage conditions and temperature control measures"
+      ]
+    },
+    "non_conforme": true
+  },
+  {
+    "fichier": "premium_lab_report_patisserie.pdf",
+    "date_analyse": "2026-06-24T15:46:05.142245",
+    "donnees_rapport": {
+      "dossier_id": "AN-2026-4403",
+      "date_prelevement": "22 Juin 2026",
+      "site": "Hypermarche Lyon-Centre",
+      "rayon": "Pâtisserie",
+      "produit": "Éclairs à la Vanille Fondant (Fabrication Maison)",
+      "statut_global": "NON CONFORME",
+      "commentaire_lab": "Dépassement majeur des seuils acceptables pour les Staphylocoques à coagulase positive. Cette contamination est le marqueur direct d'un portage ou d'une manipulation humaine défectueuse au cours des phases de finition.",
+      "analyses": [
+        {
+          "parametre": "Flore totale d'altération (30°C)",
+          "resultat": "4,3 x 10⁴ UFC/g",
+          "limite": "1,0 x 10⁵ UFC/g",
+          "evaluation": "Satisfaisant"
+        },
+        {
+          "parametre": "Entérobactéries",
+          "resultat": "2,1 x 10² UFC/g",
+          "limite": "1,0 x 10² UFC/g",
+          "evaluation": "Non conforme"
+        },
+        {
+          "parametre": "Staphylocoques à coagulase positive",
+          "resultat": "2,4 x 10³ UFC/g",
+          "limite": "1,0 x 10² UFC/g",
+          "evaluation": "DÉFAUT MAJEUR"
+        },
+        {
+          "parametre": "Salmonella spp.",
+          "resultat": "Absence dans 25g",
+          "limite": "Absence / 25g",
+          "evaluation": "Satisfaisant"
+        }
+      ]
+    },
+    "plan_action": {
+      "niveau_risque": "ÉLEVÉ",
+      "actions_immediates": [
+        {
+          "titre": "Renforcement de l'hygiène des mains et du matériel",
+          "description": "Distribuer une formation supplémentaire sur la bonne hygiène des mains et le nettoyage des équipements utilisés pour la production des éclairs à la vanille fondant. Mettre en place un contrôle fréquent de l'hygiène par les superviseurs."
+        },
+        {
+          "titre": "Renforcement des procédures de contrôle",
+          "description": "Augmenter le nombre d'échantillons prélevés lors de la production pour une surveillance plus rigoureuse. Mettre en place un système de reporting et de suivi des résultats afin d'identifier rapidement toute nouvelle contamination."
+        }
+      ],
+      "plan_mois_suivant": [
+        {
+          "titre": "Analyse de la chaîne de traçabilité",
+          "description": "Effectuer une révision complète du processus de production, y compris l'identification des points de contact humains et la mise en place d'un système d'enregistrement pour suivre les personnes impliquées dans chaque étape."
+        },
+        {
+          "titre": "Amélioration continue des procédures",
+          "description": "Revoir et améliorer les protocoles existants concernant le nettoyage et l'asepsie. Implémenter un système de surveillance permanent pour veiller à la conformité avec ces nouvelles procédures."
+        }
+      ],
+      "investigation_amont": [
+        "Évaluation des pratiques hygiéniques des employés",
+        "Examen du nettoyage et désinfection des équipements",
+        "Étude de l'environnement de travail pour identifier tout facteur potentiellement contaminant"
+      ]
+    },
+    "non_conforme": true
+  },
+  {
+    "fichier": "premium_lab_report_traiteur.pdf",
+    "date_analyse": "2026-06-24T15:46:26.840182",
+    "donnees_rapport": {
+      "dossier_id": "AN-2026-4404",
+      "date_prelevement": "22 Juin 2026",
+      "site": "Hypermarche Lyon-Centre",
+      "rayon": "Traiteur / Plats Cuisinés",
+      "produit": "Salade Piémontaise Traditionnelle au Jambon",
+      "statut_global": "NON CONFORME",
+      "commentaire_lab": "Mise en évidence d'une prolifération critique d'Escherichia coli. Les niveaux observés indiquent un risque de contamination fécale ou croisée amont associé à un défaut de maintien strict sous chaîne du froid.",
+      "analyses": [
+        {
+          "parametre": "Flore microbienne aérobie",
+          "resultat": "6,8 x 10⁵ UFC/g",
+          "limite": "5,0 x 10⁵ UFC/g",
+          "evaluation": "Satisfaisant"
+        },
+        {
+          "parametre": "Escherichia coli",
+          "resultat": "1,1 x 10³ UFC/g",
+          "limite": "1,0 x 10² UFC/g",
+          "evaluation": "NON CONFORME"
+        },
+        {
+          "parametre": "Staphylocoques à coagulase",
+          "resultat": "< 10 UFC/g",
+          "limite": "1,0 x 10² UFC/g",
+          "evaluation": "Satisfaisant"
+        },
+        {
+          "parametre": "Listeria monocytogenes",
+          "resultat": "Absence dans 25g",
+          "limite": "Absence / 25g",
+          "evaluation": "Satisfaisant"
+        }
+      ]
+    },
+    "plan_action": {
+      "niveau_risque": "CRITIQUE",
+      "actions_immediates": [
+        {
+          "titre": "Arrêt immédiat de la vente et du stockage",
+          "description": "Tous les produits concernés doivent être retirés des étagères, des rayons de caisse et des zones de stockage. Un avertissement doit être placé sur chaque paquet pour indiquer l'arrêt de vente."
+        },
+        {
+          "titre": "Retrait du marché",
+          "description": "Tous les produits similaires provenant de la même batch ou d'un fournisseur similaire doivent être retirés du marché afin d'éviter toute contamination supplémentaire. Des informations claires et précises doivent être données aux clients via le site web et les réseaux sociaux."
+        },
+        {
+          "titre": "Identification des lots concernés",
+          "description": "Tous les lots de produits concernés par l'incident doivent être identifiés. Ceci peut être fait à travers la base de données du stockage, en vérifiant les numéros de lot ou d'autres informations pertinentes."
+        },
+        {
+          "titre": "Communication avec le public",
+          "description": "Une communication claire et transparente doit être faite au public pour informer sur l'incident. Cela devrait inclure des instructions sur la manière de disposer du produit restant chez soi, ainsi que les informations de contact pour obtenir plus d'aide ou de soutien."
+        }
+      ],
+      "plan_mois_suivant": [
+        {
+          "titre": "Analyse des causes racine",
+          "description": "Une enquête approfondie doit être menée afin d'identifier la cause racine de cette non-conformité. Ceci devrait inclure une évaluation du processus de fabrication, du stockage et de la chaîne du froid."
+        },
+        {
+          "titre": "Amélioration des mesures de contrôle",
+          "description": "Les mesures de contrôle doivent être améliorées pour s'assurer que les niveaux d'hygiène nécessaires sont maintenus tout au long du processus. Ceci pourrait impliquer l'instauration d'un système de surveillance continu des températures et la mise en place d'une formation accrue sur les bonnes pratiques hygiéniques."
+        },
+        {
+          "titre": "Suivi et vérification",
+          "description": "Des audits réguliers doivent être organisés pour s'assurer que toutes les mesures de contrôle ont été mises en œuvre efficacement. Ceci devrait également inclure une revue périodique des procédures internes."
+        }
+      ],
+      "investigation_amont": [
+        "Vérification du respect des normes d'hygiène par les fournisseurs",
+        "Analyse du processus de fabrication et de stockage interne",
+        "Examen des pratiques d'emballage et de conditionnement",
+        "Évaluation de la chaîne du froid à partir des fournisseurs jusqu'à l'étagère du client"
+      ]
+    },
+    "non_conforme": true
+  }
+]
