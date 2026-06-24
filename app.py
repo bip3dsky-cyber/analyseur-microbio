@@ -526,7 +526,7 @@ with st.sidebar:
     if API_KEY:
         st.success("✅ IA connectée (Groq)")
     else:
-        st.error("⚠️ Clé API manquante")
+        st.error("️ Clé API manquante")
     
     st.info("""
     **Système IA avec Mémoire**
@@ -566,7 +566,7 @@ if page == "📊 Tableau de bord":
         if historique:
             dernier = historique[0]
             st.metric(
-                " Dernière Analyse",
+                "📅 Dernière Analyse",
                 datetime.fromisoformat(dernier['date_analyse_systeme']).strftime("%d/%m")
             )
         else:
@@ -665,7 +665,7 @@ elif page == "📤 Analyser des PDFs":
                 texte = extraire_texte_pdf(uploaded_file)
                 
                 if not texte:
-                    st.warning(f" Impossible de lire {uploaded_file.name}")
+                    st.warning(f"❌ Impossible de lire {uploaded_file.name}")
                     continue
                 
                 donnees = analyser_rapport(texte)
@@ -703,7 +703,7 @@ elif page == "📤 Analyser des PDFs":
                 donnees = res['donnees_rapport']
                 is_nc = res['non_conforme']
                 
-                icon = "🚨" if is_nc else "✅"
+                icon = "" if is_nc else "✅"
                 st.markdown(f"### {icon} {donnees.get('produit', 'N/A')}")
                 
                 col1, col2 = st.columns(2)
@@ -714,21 +714,21 @@ elif page == "📤 Analyser des PDFs":
                     st.write(f"**Date :** {donnees.get('date_prelevement', 'N/A')}")
                     st.write(f"**Dossier :** {donnees.get('dossier_id', 'N/A')}")
                 
-                st.markdown("** Analyses :**")
+                st.markdown("**🔬 Analyses :**")
                 for analyse in donnees.get('analyses', []):
                     eval_upper = analyse.get('evaluation', '').upper()
                     if 'CRITIQUE' in eval_upper or 'DÉFAUT' in eval_upper:
-                        icone = "🔴"
-                    elif 'NON CONFORME' in eval_upper:
                         icone = ""
+                    elif 'NON CONFORME' in eval_upper:
+                        icone = "🟠"
                     else:
-                        icone = "🟢"
+                        icone = ""
                     
                     st.write(f"- {icone} **{analyse.get('parametre')}** : {analyse.get('resultat')} (Limite: {analyse.get('limite')}) - *{analyse.get('evaluation')}*")
                 
                 if is_nc and res['plan_action']:
                     plan = res['plan_action']
-                    st.markdown(f"**️ Niveau de risque :** {plan.get('niveau_risque', 'N/A')}")
+                    st.markdown(f"**⚠️ Niveau de risque :** {plan.get('niveau_risque', 'N/A')}")
                     
                     st.markdown("**🛑 Actions immédiates :**")
                     for action in plan.get('actions_immediates', []):
@@ -746,8 +746,8 @@ elif page == "📤 Analyser des PDFs":
 # PAGE 3: HISTORIQUE PAR FICHIER
 # =============================================================================
 
-elif page == " Historique par Fichier":
-    st.markdown("## 📁 Historique détaillé par fichier PDF")
+elif page == "📁 Historique par Fichier":
+    st.markdown("##  Historique détaillé par fichier PDF")
     
     historique = get_historique_analyses(limit=100)
     
@@ -780,7 +780,7 @@ elif page == " Historique par Fichier":
                 st.metric("📊 Total analyses", len(analyses_fichier))
             with col2:
                 nb_nc = sum(1 for a in analyses_fichier if a['non_conforme'])
-                st.metric("🚨 Non-conformités", nb_nc)
+                st.metric(" Non-conformités", nb_nc)
             with col3:
                 taux = (nb_nc / len(analyses_fichier) * 100) if len(analyses_fichier) > 0 else 0
                 st.metric("📈 Taux de NC", f"{taux:.1f}%")
@@ -835,7 +835,7 @@ elif page == " Historique par Fichier":
                     st.plotly_chart(fig_bar, use_container_width=True)
             
             st.markdown("---")
-            st.markdown("###  Détails des analyses")
+            st.markdown("### 🔬 Détails des analyses")
             
             for i, analyse in enumerate(analyses_fichier, 1):
                 donnees_completes = json.loads(analyse['donnees_completes'])
