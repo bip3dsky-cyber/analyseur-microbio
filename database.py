@@ -47,7 +47,7 @@ def init_database():
         )
     """)
     
-    # Table du plan d'analyse dynamique (fréquences par produit/rayon)
+    # Table du plan d'analyse dynamique
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS plan_surveillance (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -63,7 +63,6 @@ def init_database():
     
     conn.commit()
     conn.close()
-    print("✅ Base de données initialisée")
 
 def sauvegarder_analyse(donnees: Dict, plan_action: Optional[Dict] = None):
     """Sauvegarde une analyse complète dans la base"""
@@ -121,9 +120,8 @@ def sauvegarder_analyse(donnees: Dict, plan_action: Optional[Dict] = None):
     conn.close()
 
 def _mettre_a_jour_plan_surveillance(cursor, rayon: str, produit: str, plan_action: Dict):
-    """Met à jour automatiquement la fréquence de surveillance basée sur l'historique"""
+    """Met à jour automatiquement la fréquence de surveillance"""
     
-    # Vérifier si le produit/rayon existe déjà
     cursor.execute("""
         SELECT id, nb_incidents_3mois FROM plan_surveillance
         WHERE rayon = ? AND (produit = ? OR produit = '')
@@ -131,7 +129,7 @@ def _mettre_a_jour_plan_surveillance(cursor, rayon: str, produit: str, plan_acti
     
     existing = cursor.fetchone()
     
-    # Calculer le nouveau nombre d'incidents (3 derniers mois)
+    # Calculer le nombre d'incidents (3 derniers mois)
     trois_mois_avant = (datetime.now() - timedelta(days=90)).isoformat()
     cursor.execute("""
         SELECT COUNT(*) FROM analyses a
@@ -155,11 +153,10 @@ def _mettre_a_jour_plan_surveillance(cursor, rayon: str, produit: str, plan_acti
         frequence = 4
         statut = 'TRES RENFORCE'
     else:
-        frequence = 8  # Hebdomadaire
+        frequence = 8
         statut = 'CRISE'
     
     if existing:
-        # Mettre à jour
         cursor.execute("""
             UPDATE plan_surveillance
             SET frequence_mois = ?, dernier_incident = ?, 
@@ -169,7 +166,6 @@ def _mettre_a_jour_plan_surveillance(cursor, rayon: str, produit: str, plan_acti
         """, (frequence, datetime.now().isoformat(), nb_incidents, 
               statut, datetime.now().isoformat(), existing[0]))
     else:
-        # Créer nouveau
         cursor.execute("""
             INSERT INTO plan_surveillance (
                 rayon, produit, frequence_mois, dernier_incident,
@@ -221,15 +217,12 @@ def get_statistiques_generales() -> Dict:
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
-    # Total analyses
     cursor.execute("SELECT COUNT(*) FROM analyses")
     total = cursor.fetchone()[0]
     
-    # Total NC
     cursor.execute("SELECT COUNT(*) FROM analyses WHERE non_conforme = 1")
     total_nc = cursor.fetchone()[0]
     
-    # NC par rayon
     cursor.execute("""
         SELECT rayon, COUNT(*) as nb
         FROM analyses 
@@ -239,7 +232,6 @@ def get_statistiques_generales() -> Dict:
     """)
     nc_par_rayon = {row[0]: row[1] for row in cursor.fetchall()}
     
-    # Microbes les plus fréquents
     cursor.execute("""
         SELECT m.parametre, COUNT(*) as nb
         FROM microbes_detectes m
@@ -262,9 +254,8 @@ def get_statistiques_generales() -> Dict:
         'microbes_frequents': microbes_frequents
     }
 
-# Initialiser la base au chargement du module
+# Initialiser la base au chargement
 if os.path.exists(DB_PATH):
-    print("📁 Base de données chargée")
+    pass
 else:
     init_database()
-    print("✨ Nouvelle base de données créée")

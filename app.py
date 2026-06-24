@@ -12,6 +12,12 @@ import plotly.graph_objects as go
 import requests
 import pdfplumber
 import tempfile
+import base64
+from io import BytesIO
+from fpdf import FPDF
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 # Import des modules locaux
 from database import (
@@ -28,6 +34,94 @@ st.set_page_config(
 )
 
 # =============================================================================
+# FONCTION POUR GÉNÉRER UN PDF AVEC GRAPHIQUES
+# =============================================================================
+
+class PDFReport(FPDF):
+    def header(self):
+        # Logo si existe
+        logo_path = 'assets/logo.png'
+        if os.path.exists(logo_path):
+            try:
+                self.image(logo_path, 10, 8, 33)
+            except:
+                pass
+        # Titre
+        self.set_font('Arial', 'B', 15)
+        self.cell(80)
+        self.cell(30, 10, 'Rapport Qualite Microbiologique', 0, 0, 'C')
+        self.ln(20)
+    
+    def footer(self):
+        self.set_y(-15)
+        self.set_font('Arial', 'I', 8)
+        self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
+    
+    def chapter_title(self, title):
+        self.set_font('Arial', 'B', 12)
+        self.set_fill_color(200, 220, 255)
+        self.cell(0, 6, title, 0, 1, 'L', 1)
+        self.ln(4)
+    
+    def chapter_body(self, body):
+        self.set_font('Arial', '', 11)
+        # Encoder pour éviter les erreurs avec les caractères spéciaux
+        body_encoded = body.encode('latin-1', 'replace').decode('latin-1')
+        self.multi_cell(0, 5, body_encoded)
+        self.ln()
+
+def generate_pdf_report(historique, stats):
+    """Génère un PDF complet avec statistiques et graphiques"""
+    pdf = PDFReport()
+    pdf.add_page()
+    
+    # Résumé exécutif
+    pdf.chapter_title('RESUME EXECUTIF')
+    resume_text = (
+        f"Date du rapport: {datetime.now().strftime('%d/%m/%Y')}\n"
+        f"Total analyses: {stats['total_analyses']}\n"
+        f"Non-conformites: {stats['total_nc']}\n"
+        f"Taux de NC: {stats['taux_nc']:.1f}%\n\n"
+        f"Ce rapport presente l'analyse des resultats microbiologiques "
+        f"et les actions correctives mises en place."
+    )
+    pdf.chapter_body(resume_text)
+    
+    # Statistiques par rayon
+    if stats['nc_par_rayon']:
+        pdf.chapter_title('NC PAR RAYON')
+        for rayon, nb in stats['nc_par_rayon'].items():
+            pdf.chapter_body(f"- {rayon}: {nb} NC")
+    
+    # Microbes fréquents
+    if stats['microbes_frequents']:
+        pdf.chapter_title('MICROBES LES PLUS FREQUENTS')
+        for microbe, nb in stats['microbes_frequents'].items():
+            pdf.chapter_body(f"- {microbe}: {nb} detections")
+    
+    # Historique détaillé
+    pdf.chapter_title('HISTORIQUE DES ANALYSES')
+    for analyse in historique[:20]:  # Limite aux 20 dernières
+        donnees = json.loads(analyse['donnees_completes'])
+        statut = "NON CONFORME" if analyse['non_conforme'] else "CONFORME"
+        produit = donnees.get('produit', 'N/A')
+        rayon = donnees.get('rayon', 'N/A')
+        date = analyse['date_analyse_systeme'][:10]
+        
+        pdf.chapter_body(
+            f"Date: {date}\n"
+            f"Produit: {produit}\n"
+            f"Rayon: {rayon}\n"
+            f"Statut: {statut}\n"
+        )
+        pdf.ln(2)
+    
+    # Sauvegarder le PDF
+    pdf_path = "rapport_qualite.pdf"
+    pdf.output(pdf_path)
+    return pdf_path
+
+# =============================================================================
 # CONFIGURATION IA (GROQ CLOUD)
 # =============================================================================
 
@@ -42,7 +136,7 @@ except:
     MODEL_NAME = "llama-3.3-70b-versatile"
 
 def appeler_ia(system_prompt, user_prompt):
-    """Appelle l'API Groq (Llama 3) au lieu d'Ollama local"""
+    """Appelle l'API Groq (Llama 3)"""
     
     if not API_KEY:
         st.error("⚠️ Clé API manquante. Configurez les secrets dans Streamlit Cloud.")
@@ -64,7 +158,7 @@ def appeler_ia(system_prompt, user_prompt):
     }
     
     try:
-        response = requests.post(GROQ_API_URL, json=payload, headers=headers, timeout=60)
+        response = requests.post(GROQ_API_URL, json=payload, headers=headers, timeout=120)
         response.raise_for_status()
         content = response.json()['choices'][0]['message']['content']
         return json.loads(content)
@@ -163,26 +257,40 @@ init_database()
 # BARRE LATÉRALE
 # =============================================================================
 
-st.sidebar.title("🧭 Navigation")
-page = st.sidebar.radio(
-    "Choisir une page :",
-    ["📊 Tableau de bord", "📤 Analyser des PDFs", "📅 Plan de Surveillance", "📜 Historique"]
-)
-
-st.sidebar.markdown("---")
-
-if API_KEY:
-    st.sidebar.success("✅ IA connectée (Groq)")
-else:
-    st.sidebar.error("⚠️ Clé API manquante")
-
-st.sidebar.info("""
-**Système IA avec Mémoire**
-- Analyse automatique des PDFs
-- Détection des non-conformités
-- Plans d'action intelligents
-- Adaptation mensuelle automatique
-""")
+with st.sidebar:
+    # Logo
+    logo_path = "assets/logo.png"
+    if os.path.exists(logo_path):
+        try:
+            st.image(logo_path, use_column_width=True)
+        except:
+            st.title("🔬 Analyseur Microbiologique")
+    else:
+        st.title("🔬 Analyseur Microbiologique")
+    
+    st.markdown("---")
+    
+    # Navigation
+    page = st.radio(
+        "Choisir une page :",
+        ["📊 Tableau de bord", "📤 Analyser des PDFs", "📅 Plan de Surveillance", "📜 Historique"]
+    )
+    
+    st.markdown("---")
+    
+    # Status API
+    if API_KEY:
+        st.success("✅ IA connectée (Groq)")
+    else:
+        st.error("⚠️ Clé API manquante")
+    
+    st.info("""
+    **Système IA avec Mémoire**
+    - Analyse automatique des PDFs
+    - Détection des non-conformités
+    - Plans d'action intelligents
+    - Adaptation mensuelle automatique
+    """)
 
 # =============================================================================
 # PAGE 1: TABLEAU DE BORD
@@ -192,7 +300,9 @@ if page == "📊 Tableau de bord":
     st.header("📊 Vue d'ensemble de la qualité")
     
     stats = get_statistiques_generales()
+    historique = get_historique_analyses(limit=100)
     
+    # KPIs
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
@@ -212,7 +322,6 @@ if page == "📊 Tableau de bord":
         st.metric(label="Surveillance Renforcée", value=nb_renforce, delta="Produits à risque")
     
     with col4:
-        historique = get_historique_analyses(1)
         if historique:
             dernier = historique[0]
             st.metric(
@@ -225,6 +334,7 @@ if page == "📊 Tableau de bord":
     
     st.markdown("---")
     
+    # Graphiques
     col1, col2 = st.columns(2)
     
     with col1:
@@ -255,6 +365,7 @@ if page == "📊 Tableau de bord":
         else:
             st.info("Aucun microbe détecté")
     
+    # Alertes actives
     st.markdown("---")
     st.subheader("⚠️ Alertes Actives (Surveillance Renforcée)")
     
@@ -274,9 +385,32 @@ if page == "📊 Tableau de bord":
                     st.write(f"**Incidents (3 mois) :** {item['nb_incidents_3mois']}")
     else:
         st.success("✅ Aucune alerte active - Tous les produits en surveillance normale")
+    
+    # Bouton export PDF
+    st.markdown("---")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if historique:
+            if st.button("📄 Générer un rapport PDF", type="primary"):
+                with st.spinner("Génération du PDF en cours..."):
+                    pdf_path = generate_pdf_report(historique, stats)
+                    
+                    with open(pdf_path, "rb") as pdf_file:
+                        pdf_bytes = pdf_file.read()
+                    
+                    st.download_button(
+                        label="📥 Télécharger le PDF",
+                        data=pdf_bytes,
+                        file_name=f"rapport_qualite_{datetime.now().strftime('%Y%m%d')}.pdf",
+                        mime="application/pdf"
+                    )
+                    st.success("✅ PDF généré avec succès !")
+        else:
+            st.info("📭 Aucune donnée à exporter. Analysez d'abord des PDFs.")
 
 # =============================================================================
-# PAGE 2: ANALYSER DES PDFs (VERSION COMPLÈTE)
+# PAGE 2: ANALYSER DES PDFs
 # =============================================================================
 
 elif page == "📤 Analyser des PDFs":
