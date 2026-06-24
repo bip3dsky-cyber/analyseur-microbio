@@ -599,12 +599,13 @@ elif page == "📅 Plan de Surveillance":
         """)
 
 # =============================================================================
-# PAGE 4: HISTORIQUE
+# PAGE 4: HISTORIQUE (VERSION AMÉLIORÉE AVEC GRAPHIQUES)
 # =============================================================================
 
 elif page == "📜 Historique":
     st.header("📜 Historique complet des analyses")
     
+    # Filtres
     col1, col2 = st.columns(2)
     with col1:
         filtre_rayon = st.multiselect(
@@ -622,6 +623,7 @@ elif page == "📜 Historique":
     if historique:
         df = pd.DataFrame(historique)
         
+        # Appliquer les filtres
         if filtre_rayon:
             df = df[df['rayon'].isin(filtre_rayon)]
         
@@ -630,6 +632,8 @@ elif page == "📜 Historique":
         elif filtre_statut == "Non-conformes":
             df = df[df['non_conforme'] == 1]
         
+        # Afficher le tableau récapitulatif
+        st.subheader("📋 Liste des analyses")
         st.dataframe(
             df[['date_analyse_systeme', 'rayon', 'produit', 'statut_global', 'niveau_risque']],
             use_container_width=True,
@@ -642,6 +646,7 @@ elif page == "📜 Historique":
             }
         )
         
+        # Export CSV
         csv = df.to_csv(index=False, encoding='utf-8-sig')
         st.download_button(
             label="📥 Télécharger en CSV",
@@ -650,6 +655,7 @@ elif page == "📜 Historique":
             mime="text/csv"
         )
         
+        # Détails d'une analyse
         st.markdown("---")
         st.subheader("🔍 Détails d'une analyse")
         
@@ -659,14 +665,226 @@ elif page == "📜 Historique":
         if choix:
             idx = liste_analyses.index(choix)
             analyse = historique[idx]
-            
             donnees = json.loads(analyse['donnees_completes'])
-            st.json(donnees)
             
-            if analyse['plan_action']:
+            # Affichage visuel des détails
+            is_nc = analyse['non_conforme']
+            
+            # En-tête avec couleur selon statut
+            if is_nc:
+                st.error(f"🚨 {donnees.get('produit', 'N/A')}")
+            else:
+                st.success(f"✅ {donnees.get('produit', 'N/A')}")
+            
+            # Informations principales en colonnes
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric("🏪 Rayon", donnees.get('rayon', 'N/A'))
+            with col2:
+                st.metric("📅 Date", donnees.get('date_prelevement', 'N/A'))
+            with col3:
+                st.metric("🆔 Dossier", donnees.get('dossier_id', 'N/A'))
+            with col4:
+                statut_color = "🔴 NON CONFORME" if is_nc else "🟢 CONFORME"
+                st.metric("📊 Statut", statut_color)
+            
+            # Site client
+            if donnees.get('site'):
+                st.text(f"📍 Site: {donnees.get('site')}")
+            
+            st.markdown("---")
+            
+            # Graphique des résultats d'analyses
+            st.subheader("🔬 Résultats des analyses microbiologiques")
+            
+            analyses = donnees.get('analyses', [])
+            if analyses:
+                # Préparer les données pour le graphique
+                df_analyses = pd.DataFrame(analyses)
+                
+                # Créer un graphique bar
+                fig = go.Figure()
+                
+                # Ajouter les barres avec couleurs selon l'évaluation
+                colors = []
+                for eval_val in df_analyses['evaluation']:
+                    eval_upper = eval_val.upper() if eval_val else ''
+                    if 'CRITIQUE' in eval_upper or 'DÉFAUT' in eval_upper:
+                        colors.append('#FF4444')  # Rouge
+                    elif 'NON CONFORME' in eval_upper:
+                        colors.append('#FF8800')  # Orange
+                    else:
+                        colors.append('#44CC44')  # Vert
+                
+                fig.add_trace(go.Bar(
+                    x=df_analyses['parametre'],
+                    y=[1] * len(df_analyses),  # Valeur factice pour l'affichage
+                    marker_color=colors,
+                    text=df_analyses['evaluation'],
+                    textposition='auto',
+                    hovertemplate='<b>%{x}</b><br>Résultat: %{customdata[0]}<br>Limite: %{customdata[1]}<br>Évaluation: %{customdata[2]}<extra></extra>',
+                    customdata=df_analyses[['resultat', 'limite', 'evaluation']].values
+                ))
+                
+                fig.update_layout(
+                    title="Résultats des analyses par paramètre",
+                    xaxis_title="Paramètres analysés",
+                    yaxis_title="Conformité",
+                    showlegend=False,
+                    height=400,
+                    yaxis=dict(showticklabels=False)
+                )
+                
+                st.plotly_chart(fig, use_container_width=True)
+                
+                # Tableau détaillé des résultats
+                st.subheader("📊 Tableau détaillé des résultats")
+                
+                # Créer un DataFrame affichable
+                df_display = df_analyses.copy()
+                df_display = df_display.rename(columns={
+                    'parametre': 'Paramètre',
+                    'resultat': 'Résultat observé',
+                    'limite': 'Limite réglementaire',
+                    'evaluation': 'Évaluation'
+                })
+                
+                # Appliquer un style conditionnel
+                def colorer_evaluation(val):
+                    if isinstance(val, str):
+                        val_upper = val.upper()
+                        if 'CRITIQUE' in val_upper or 'DÉFAUT' in val_upper:
+                            return 'background-color: #FF4444; color: white; font-weight: bold'
+                        elif 'NON CONFORME' in val_upper:
+                            return 'background-color: #FF8800; color: white; font-weight: bold'
+                        else:
+                            return 'background-color: #44CC44; color: white; font-weight: bold'
+                    return ''
+                
+                df_styled = df_display.style.applymap(colorer_evaluation, subset=['Évaluation'])
+                st.dataframe(df_styled, use_container_width=True)
+                
+                # Détails texte pour chaque analyse
+                st.subheader("📝 Détails par paramètre")
+                for analyse_item in analyses:
+                    parametre = analyse_item.get('parametre', 'N/A')
+                    resultat = analyse_item.get('resultat', 'N/A')
+                    limite = analyse_item.get('limite', 'N/A')
+                    evaluation = analyse_item.get('evaluation', 'N/A')
+                    
+                    # Icône selon évaluation
+                    eval_upper = evaluation.upper() if evaluation else ''
+                    if 'CRITIQUE' in eval_upper or 'DÉFAUT' in eval_upper:
+                        icone = "🔴"
+                        couleur = "error"
+                    elif 'NON CONFORME' in eval_upper:
+                        icone = "🟠"
+                        couleur = "warning"
+                    else:
+                        icone = "🟢"
+                        couleur = "success"
+                    
+                    with st.container():
+                        col1, col2 = st.columns([3, 1])
+                        with col1:
+                            st.markdown(f"**{parametre}**")
+                            st.text(f"Résultat: {resultat}")
+                            st.text(f"Limite: {limite}")
+                        with col2:
+                            if couleur == "error":
+                                st.error(f"{icone} {evaluation}")
+                            elif couleur == "warning":
+                                st.warning(f"{icone} {evaluation}")
+                            else:
+                                st.success(f"{icone} {evaluation}")
+                        st.markdown("---")
+            
+            # Commentaire du laboratoire
+            if donnees.get('commentaire_lab'):
+                st.subheader("💬 Commentaire du laboratoire")
+                if is_nc:
+                    st.error(donnees.get('commentaire_lab'))
+                else:
+                    st.info(donnees.get('commentaire_lab'))
+            
+            # Plan d'action si NC
+            if is_nc and analyse.get('plan_action'):
+                st.markdown("---")
+                st.subheader("📋 Plan d'action généré par l'IA")
+                
                 plan = json.loads(analyse['plan_action'])
-                st.markdown("### 📋 Plan d'action généré")
-                st.json(plan)
+                
+                # Niveau de risque
+                niveau_risque = plan.get('niveau_risque', 'N/A')
+                if niveau_risque.upper() == 'CRITIQUE':
+                    st.error(f"⚠️ Niveau de risque: **{niveau_risque}**")
+                elif niveau_risque.upper() == 'ÉLEVÉ':
+                    st.warning(f"⚠️ Niveau de risque: **{niveau_risque}**")
+                else:
+                    st.info(f"ℹ️ Niveau de risque: **{niveau_risque}**")
+                
+                # Actions immédiates
+                st.markdown("### 🛑 Actions immédiates recommandées")
+                for i, action in enumerate(plan.get('actions_immediates', []), 1):
+                    if isinstance(action, dict):
+                        titre = action.get('titre', 'Action')
+                        description = action.get('description', '')
+                        with st.expander(f"{i}. {titre}", expanded=False):
+                            st.write(description)
+                    else:
+                        st.write(f"{i}. {action}")
+                
+                # Plan du mois suivant
+                st.markdown("### 📅 Plan d'analyse pour le mois suivant")
+                for i, action in enumerate(plan.get('plan_mois_suivant', []), 1):
+                    if isinstance(action, dict):
+                        titre = action.get('titre', 'Analyse')
+                        description = action.get('description', '')
+                        with st.expander(f"➕ {i}. {titre}", expanded=False):
+                            st.write(description)
+                    else:
+                        st.write(f"➕ {i}. {action}")
+                
+                # Investigation amont
+                if plan.get('investigation_amont'):
+                    st.markdown("### 🔍 Investigation en amont recommandée")
+                    st.info(plan.get('investigation_amont'))
+            
+            # Graphique comparatif si plusieurs analyses du même produit
+            st.markdown("---")
+            st.subheader("📈 Historique du produit")
+            
+            # Rechercher les analyses précédentes du même produit
+            produit = donnees.get('produit', '')
+            rayon = donnees.get('rayon', '')
+            
+            analyses_produit = [a for a in historique if json.loads(a['donnees_completes']).get('produit') == produit]
+            
+            if len(analyses_produit) > 1:
+                st.info(f"Ce produit a été analysé {len(analyses_produit)} fois")
+                
+                # Compter les conformités/non-conformités
+                nc_count = sum(1 for a in analyses_produit if a['non_conforme'])
+                conforme_count = len(analyses_produit) - nc_count
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.metric("Analyses conformes", conforme_count)
+                with col2:
+                    st.metric("Non-conformités", nc_count)
+                
+                # Graphique camembert
+                fig_pie = go.Figure(data=[go.Pie(
+                    labels=['Conformes', 'Non-conformes'],
+                    values=[conforme_count, nc_count],
+                    hole=0.3
+                )])
+                fig_pie.update_layout(title=f"Taux de conformité - {produit[:50]}...")
+                st.plotly_chart(fig_pie, use_container_width=True)
+            else:
+                st.info("Première analyse de ce produit")
+    
     else:
         st.info("📭 Aucune analyse enregistrée. Commencez par analyser des PDFs.")
 
