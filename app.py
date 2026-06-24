@@ -1,5 +1,5 @@
 # =============================================================================
-# APPLICATION WEB STREAMLIT - ANALYSEUR MICROBIOLOGIQUE (COMPLÈTE)
+# APPLICATION WEB STREAMLIT - ANALYSEUR MICROBIOLOGIQUE (RESPONSIVE)
 # =============================================================================
 
 import streamlit as st
@@ -19,7 +19,7 @@ from database import (
 )
 
 # =============================================================================
-# CSS MODERNE AVEC ANIMATIONS
+# CSS RESPONSIVE AVEC ANIMATIONS
 # =============================================================================
 
 def get_css_theme(is_dark=True):
@@ -54,6 +54,7 @@ def get_css_theme(is_dark=True):
             50% { transform: scale(1.02); }
         }
         
+        /* ===== FOND ANIMÉ ===== */
         .stApp {
             background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #1a1a2e, #16213e, #0f3460);
             background-size: 400% 400%;
@@ -65,6 +66,7 @@ def get_css_theme(is_dark=True):
             animation: fadeIn 0.8s ease-out;
         }
         
+        /* ===== GLASSMORPHISME ===== */
         .glass-card {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(20px);
@@ -83,12 +85,14 @@ def get_css_theme(is_dark=True):
             border-color: rgba(102, 126, 234, 0.3);
         }
         
+        /* ===== SIDEBAR ===== */
         section[data-testid="stSidebar"] {
             background: rgba(15, 12, 41, 0.95);
             backdrop-filter: blur(30px);
             border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
         
+        /* ===== TITRES ===== */
         h1 {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             background-size: 200% 200%;
@@ -109,6 +113,7 @@ def get_css_theme(is_dark=True):
             color: #e0e0e0 !important;
         }
         
+        /* ===== BOUTONS ===== */
         .stButton > button {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white !important;
@@ -118,6 +123,7 @@ def get_css_theme(is_dark=True):
             font-weight: 600;
             box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
             transition: all 0.3s ease;
+            width: 100%;
         }
         
         .stButton > button:hover {
@@ -125,6 +131,7 @@ def get_css_theme(is_dark=True):
             box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
         }
         
+        /* ===== METRICS ===== */
         [data-testid="stMetric"] {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
@@ -146,6 +153,7 @@ def get_css_theme(is_dark=True):
             font-weight: 800;
         }
         
+        /* ===== FILE UPLOADER ===== */
         .stFileUploader {
             background: rgba(255, 255, 255, 0.03);
             border: 2px dashed rgba(102, 126, 234, 0.4);
@@ -159,6 +167,7 @@ def get_css_theme(is_dark=True):
             background: rgba(102, 126, 234, 0.05);
         }
         
+        /* ===== PROGRESS BAR ===== */
         .stProgress > div > div {
             background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             background-size: 200% 100%;
@@ -166,6 +175,7 @@ def get_css_theme(is_dark=True):
             animation: gradientBG 3s ease infinite;
         }
         
+        /* ===== SCROLLBAR ===== */
         ::-webkit-scrollbar {
             width: 12px;
         }
@@ -179,6 +189,82 @@ def get_css_theme(is_dark=True):
         
         .stError {
             animation: pulse 2s infinite;
+        }
+        
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 768px) {
+            /* Sidebar en mode mobile */
+            section[data-testid="stSidebar"] {
+                width: 100% !important;
+                position: fixed;
+                z-index: 1000;
+            }
+            
+            /* Colonnes en une seule sur mobile */
+            .stColumns > div {
+                width: 100% !important;
+            }
+            
+            /* Metrics plus petits */
+            [data-testid="stMetricValue"] {
+                font-size: 1.8rem !important;
+            }
+            
+            [data-testid="stMetric"] {
+                padding: 15px;
+                margin: 5px 0;
+            }
+            
+            /* Titres plus petits */
+            h1 {
+                font-size: 1.8rem !important;
+            }
+            
+            h2 {
+                font-size: 1.5rem !important;
+            }
+            
+            h3 {
+                font-size: 1.2rem !important;
+            }
+            
+            /* Boutons pleine largeur */
+            .stButton > button {
+                width: 100%;
+                padding: 10px 20px;
+            }
+            
+            /* Glass cards padding réduit */
+            .glass-card {
+                padding: 15px;
+                margin: 10px 0;
+            }
+            
+            /* Graphiques adaptatifs */
+            .stPlotlyChart {
+                width: 100% !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            [data-testid="stMetricValue"] {
+                font-size: 1.5rem !important;
+            }
+            
+            h1 {
+                font-size: 1.5rem !important;
+            }
+            
+            .glass-card {
+                padding: 12px;
+            }
+        }
+        
+        /* ===== TABLETTE ===== */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            [data-testid="stMetricValue"] {
+                font-size: 2rem !important;
+            }
         }
         </style>
         """
@@ -259,6 +345,7 @@ def get_css_theme(is_dark=True):
             font-weight: 600;
             box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
             transition: all 0.3s ease;
+            width: 100%;
         }
         
         .stButton > button:hover {
@@ -299,6 +386,39 @@ def get_css_theme(is_dark=True):
         .stProgress > div > div {
             background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
             border-radius: 10px;
+        }
+        
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            section[data-testid="stSidebar"] {
+                width: 100% !important;
+            }
+            
+            .stColumns > div {
+                width: 100% !important;
+            }
+            
+            [data-testid="stMetricValue"] {
+                font-size: 1.8rem !important;
+            }
+            
+            h1 {
+                font-size: 1.8rem !important;
+            }
+            
+            .glass-card {
+                padding: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            [data-testid="stMetricValue"] {
+                font-size: 1.5rem !important;
+            }
+            
+            h1 {
+                font-size: 1.5rem !important;
+            }
         }
         </style>
         """
@@ -436,11 +556,11 @@ with st.sidebar:
         except:
             st.title("🔬 Analyseur Microbio")
     else:
-        st.title("🔬 Analyseur Microbio")
+        st.title(" Analyseur Microbio")
     
     st.markdown("---")
     
-    st.markdown("### 🎨 Apparence")
+    st.markdown("###  Apparence")
     dark_mode = st.toggle("🌙 Mode Sombre", value=st.session_state.dark_mode)
     st.session_state.dark_mode = dark_mode
     
@@ -450,8 +570,8 @@ with st.sidebar:
     st.markdown("---")
     
     page = st.radio(
-        " Navigation",
-        ["📊 Tableau de bord", "📤 Analyser des PDFs", "📁 Historique par Fichier", " Plan de Surveillance"]
+        "🧭 Navigation",
+        ["📊 Tableau de bord", " Analyser des PDFs", "📁 Historique par Fichier", "📅 Plan de Surveillance"]
     )
     
     st.markdown("---")
@@ -486,7 +606,7 @@ if page == "📊 Tableau de bord":
         st.metric("📋 Total Analyses", stats['total_analyses'])
     with col2:
         st.metric(
-            " Non-Conformités",
+            "🚨 Non-Conformités",
             stats['total_nc'],
             delta=f"{stats['taux_nc']:.1f}% du total",
             delta_color="inverse" if stats['taux_nc'] > 10 else "normal"
@@ -551,7 +671,7 @@ if page == "📊 Tableau de bord":
             st.info("Aucun microbe détecté")
     
     st.markdown("---")
-    st.markdown("### ️ Alertes Actives")
+    st.markdown("### ⚠️ Alertes Actives")
     
     plan_actif = get_plan_surveillance_actuel()
     if plan_actif:
@@ -584,7 +704,7 @@ elif page == "📤 Analyser des PDFs":
     )
     
     if uploaded_files:
-        st.write(f"📎 {len(uploaded_files)} fichier(s) sélectionné(s)")
+        st.write(f" {len(uploaded_files)} fichier(s) sélectionné(s)")
         
         if st.button("🚀 Lancer l'analyse", type="primary"):
             progress_bar = st.progress(0)
@@ -604,7 +724,7 @@ elif page == "📤 Analyser des PDFs":
                 donnees = analyser_rapport(texte)
                 
                 if not donnees:
-                    st.warning(f"⚠️ IA n'a pas pu analyser {uploaded_file.name}")
+                    st.warning(f"️ IA n'a pas pu analyser {uploaded_file.name}")
                     continue
                 
                 statut = donnees.get('statut_global', '')
@@ -630,13 +750,13 @@ elif page == "📤 Analyser des PDFs":
             st.success(f"{len(resultats)} rapport(s) analysé(s) !")
             
             st.markdown("---")
-            st.markdown("### 📊 Résultats")
+            st.markdown("###  Résultats")
             
             for res in resultats:
                 donnees = res['donnees_rapport']
                 is_nc = res['non_conforme']
                 
-                icon = "" if is_nc else "✅"
+                icon = "🚨" if is_nc else "✅"
                 st.markdown(f"### {icon} {donnees.get('produit', 'N/A')}")
                 
                 col1, col2 = st.columns(2)
@@ -651,11 +771,11 @@ elif page == "📤 Analyser des PDFs":
                 for analyse in donnees.get('analyses', []):
                     eval_upper = analyse.get('evaluation', '').upper()
                     if 'CRITIQUE' in eval_upper or 'DÉFAUT' in eval_upper:
-                        icone = ""
+                        icone = "🔴"
                     elif 'NON CONFORME' in eval_upper:
                         icone = "🟠"
                     else:
-                        icone = ""
+                        icone = "🟢"
                     
                     st.write(f"- {icone} **{analyse.get('parametre')}** : {analyse.get('resultat')} (Limite: {analyse.get('limite')}) - *{analyse.get('evaluation')}*")
                 
@@ -685,7 +805,7 @@ elif page == "📁 Historique par Fichier":
     historique = get_historique_analyses(limit=100)
     
     if not historique:
-        st.info("📭 Aucune analyse enregistrée. Analysez d'abord des PDFs.")
+        st.info(" Aucune analyse enregistrée. Analysez d'abord des PDFs.")
     else:
         fichiers_uniques = list(set([h['fichier_pdf'] for h in historique]))
         
@@ -710,13 +830,13 @@ elif page == "📁 Historique par Fichier":
             
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric("📊 Total analyses", len(analyses_fichier))
+                st.metric(" Total analyses", len(analyses_fichier))
             with col2:
                 nb_nc = sum(1 for a in analyses_fichier if a['non_conforme'])
                 st.metric("🚨 Non-conformités", nb_nc)
             with col3:
                 taux = (nb_nc / len(analyses_fichier) * 100) if len(analyses_fichier) > 0 else 0
-                st.metric(" Taux de NC", f"{taux:.1f}%")
+                st.metric("📈 Taux de NC", f"{taux:.1f}%")
             
             st.markdown("---")
             
@@ -741,7 +861,7 @@ elif page == "📁 Historique par Fichier":
                 st.plotly_chart(fig_pie, use_container_width=True)
             
             with col2:
-                st.markdown("###  Répartition par Rayon")
+                st.markdown("### 🏪 Répartition par Rayon")
                 rayons = {}
                 for a in analyses_fichier:
                     donnees = json.loads(a['donnees_completes'])
@@ -782,13 +902,13 @@ elif page == "📁 Historique par Fichier":
                 
                 st.markdown(f"""
                 <div class="glass-card">
-                <h3>{'' if is_nc else '✅'} Analyse {i} - {produit}</h3>
+                <h3>{'🚨' if is_nc else '✅'} Analyse {i} - {produit}</h3>
                 </div>
                 """, unsafe_allow_html=True)
                 
                 col1, col2, col3, col4 = st.columns(4)
                 with col1:
-                    st.metric("🏪 Rayon", rayon)
+                    st.metric(" Rayon", rayon)
                 with col2:
                     st.metric("📅 Date", date)
                 with col3:
@@ -838,7 +958,7 @@ elif page == "📁 Historique par Fichier":
                     
                     st.plotly_chart(fig, use_container_width=True)
                     
-                    st.markdown("#### 📋 Tableau détaillé")
+                    st.markdown("####  Tableau détaillé")
                     df_analyses = pd.DataFrame(analyses)
                     df_display = df_analyses.rename(columns={
                         'parametre': 'Paramètre',
@@ -849,7 +969,7 @@ elif page == "📁 Historique par Fichier":
                     st.dataframe(df_display, use_container_width=True)
                 
                 if donnees_rapport.get('commentaire_lab'):
-                    st.markdown("#### 💬 Commentaire du laboratoire")
+                    st.markdown("####  Commentaire du laboratoire")
                     if is_nc:
                         st.error(donnees_rapport.get('commentaire_lab'))
                     else:
@@ -861,9 +981,9 @@ elif page == "📁 Historique par Fichier":
                     
                     niveau = plan.get('niveau_risque', 'N/A')
                     if niveau.upper() == 'CRITIQUE':
-                        st.error(f"️ Niveau de risque: **{niveau}**")
+                        st.error(f"⚠️ Niveau de risque: **{niveau}**")
                     elif niveau.upper() == 'ÉLEVÉ':
-                        st.warning(f"⚠️ Niveau de risque: **{niveau}**")
+                        st.warning(f"️ Niveau de risque: **{niveau}**")
                     else:
                         st.info(f"ℹ️ Niveau de risque: **{niveau}**")
                     
@@ -884,7 +1004,7 @@ elif page == "📁 Historique par Fichier":
 # =============================================================================
 
 elif page == "📅 Plan de Surveillance":
-    st.markdown("##  Plan de Surveillance Adaptatif")
+    st.markdown("## 📅 Plan de Surveillance Adaptatif")
     
     st.markdown("""
     Ce plan est **automatiquement ajusté** selon l'historique des NC.
@@ -896,9 +1016,9 @@ elif page == "📅 Plan de Surveillance":
         df_plan = pd.DataFrame(plan)
         
         statut_colors = {
-            'NORMAL': '🟢',
+            'NORMAL': '',
             'RENFORCE': '🟡',
-            'TRES RENFORCE': '🟠',
+            'TRES RENFORCE': '',
             'CRISE': '🔴'
         }
         
@@ -908,7 +1028,7 @@ elif page == "📅 Plan de Surveillance":
                 st.markdown(f"### {statut_colors[statut]} {statut}")
                 
                 for _, row in df_filtre.iterrows():
-                    with st.expander(f" **{row['rayon']}** - {row['produit'] or 'Tous produits'}"):
+                    with st.expander(f"🏪 **{row['rayon']}** - {row['produit'] or 'Tous produits'}"):
                         col1, col2, col3 = st.columns(3)
                         with col1:
                             st.metric("Fréquence", f"{row['frequence_mois']}x/mois")
@@ -953,6 +1073,6 @@ st.markdown("---")
 st.markdown("""
 <div style='text-align: center; opacity: 0.7;'>
     <p>🔬 Analyseur Microbiologique Intelligent | Powered by Groq (Llama 3) + Streamlit</p>
-    <p>Design Glassmorphisme - Mode Sombre/Clair - Animations</p>
+    <p>Design Glassmorphisme - Mode Sombre/Clair - Responsive</p>
 </div>
 """, unsafe_allow_html=True)
