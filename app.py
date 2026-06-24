@@ -32,8 +32,14 @@ st.set_page_config(
 # =============================================================================
 
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-API_KEY = os.environ.get("API_KEY", "")
-MODEL_NAME = os.environ.get("MODEL_NAME", "llama-3.3-70b-versatile")
+
+# Récupération des secrets Streamlit
+try:
+    API_KEY = st.secrets["api"]["API_KEY"]
+    MODEL_NAME = st.secrets["api"]["MODEL_NAME"]
+except:
+    API_KEY = ""
+    MODEL_NAME = "llama-3.3-70b-versatile"
 
 def appeler_ia(system_prompt, user_prompt):
     """Appelle l'API Groq (Llama 3) au lieu d'Ollama local"""
