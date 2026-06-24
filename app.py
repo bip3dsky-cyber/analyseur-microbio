@@ -1,5 +1,5 @@
 # =============================================================================
-# APPLICATION WEB STREAMLIT - ANALYSEUR MICROBIOLOGIQUE (ANIMÉ)
+# APPLICATION WEB STREAMLIT - ANALYSEUR MICROBIOLOGIQUE (COMPLÈTE)
 # =============================================================================
 
 import streamlit as st
@@ -9,7 +9,6 @@ import os
 from datetime import datetime
 import plotly.express as px
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import requests
 import pdfplumber
 
@@ -20,448 +19,11 @@ from database import (
 )
 
 # =============================================================================
-# CSS ULTRA MODERNE AVEC ANIMATIONS COMPLÈTES
+# CSS MODERNE AVEC ANIMATIONS
 # =============================================================================
 
 def get_css_theme(is_dark=True):
     if is_dark:
-        return """
-        <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-        
-        /* ===== ANIMATIONS KEYFRAMES ===== */
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes fadeInUp {
-            from { 
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to { 
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        @keyframes fadeInLeft {
-            from { 
-                opacity: 0;
-                transform: translateX(-30px);
-            }
-            to { 
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        @keyframes fadeInRight {
-            from { 
-                opacity: 0;
-                transform: translateX(30px);
-            }
-            to { 
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        @keyframes slideDown {
-            from { 
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to { 
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.7); }
-            50% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(255, 68, 68, 0); }
-        }
-        
-        @keyframes shimmer {
-            0% { background-position: -1000px 0; }
-            100% { background-position: 1000px 0; }
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
-        }
-        
-        @keyframes glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.4); }
-            50% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.8); }
-        }
-        
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        @keyframes scaleIn {
-            from { 
-                opacity: 0;
-                transform: scale(0.8);
-            }
-            to { 
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-        
-        @keyframes ripple {
-            0% { transform: scale(0); opacity: 1; }
-            100% { transform: scale(4); opacity: 0; }
-        }
-        
-        /* ===== FOND ANIMÉ ===== */
-        .stApp {
-            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #1a1a2e, #16213e, #0f3460);
-            background-size: 400% 400%;
-            animation: gradientBG 20s ease infinite;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }
-        
-        /* ===== ANIMATION D'ENTRÉE GLOBALE ===== */
-        .stApp > div {
-            animation: fadeIn 0.8s ease-out;
-        }
-        
-        /* ===== GLASSMORPHISME AVANCÉ ===== */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            padding: 25px;
-            margin: 15px 0;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            animation: fadeInUp 0.6s ease-out;
-        }
-        
-        .glass-card:hover {
-            transform: translateY(-5px) scale(1.01);
-            box-shadow: 0 15px 45px 0 rgba(102, 126, 234, 0.3),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            border-color: rgba(102, 126, 234, 0.3);
-        }
-        
-        /* ===== SIDEBAR MODERNE ===== */
-        section[data-testid="stSidebar"] {
-            background: rgba(15, 12, 41, 0.95);
-            backdrop-filter: blur(30px);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.3);
-            animation: fadeInLeft 0.6s ease-out;
-        }
-        
-        /* ===== TITRES AVEC GRADIENT ANIMÉ ===== */
-        h1 {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: 800;
-            letter-spacing: -1px;
-            animation: fadeInDown 0.8s ease-out, gradientBG 5s ease infinite;
-        }
-        
-        h2, h3 {
-            color: #ffffff !important;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            animation: fadeInUp 0.6s ease-out;
-        }
-        
-        /* ===== TEXTE ===== */
-        p, label, div {
-            color: #e0e0e0 !important;
-        }
-        
-        /* ===== BOUTONS AVEC EFFET NÉON ===== */
-        .stButton > button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white !important;
-            border: none;
-            border-radius: 12px;
-            padding: 12px 24px;
-            font-weight: 600;
-            font-size: 14px;
-            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .stButton > button::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-        
-        .stButton > button:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-        
-        .stButton > button:hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6),
-                        0 0 0 8px rgba(102, 126, 234, 0.1);
-            animation: glow 2s ease-in-out infinite;
-        }
-        
-        .stButton > button:active {
-            transform: translateY(-1px) scale(1.02);
-        }
-        
-        /* ===== METRICS CARDS ANIMÉES ===== */
-        [data-testid="stMetric"] {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 20px;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            animation: scaleIn 0.5s ease-out;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        [data-testid="stMetric"]::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
-            transform: rotate(45deg);
-            transition: all 0.6s;
-            opacity: 0;
-        }
-        
-        [data-testid="stMetric"]:hover::before {
-            opacity: 1;
-            animation: shimmer 1.5s infinite;
-        }
-        
-        [data-testid="stMetric"]:hover {
-            transform: translateY(-5px) scale(1.03);
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(102, 126, 234, 0.3);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
-        }
-        
-        [data-testid="stMetricValue"] {
-            color: #ffffff !important;
-            font-size: 2.5rem !important;
-            font-weight: 800;
-            transition: all 0.3s ease;
-        }
-        
-        [data-testid="stMetric"]:hover [data-testid="stMetricValue"] {
-            transform: scale(1.1);
-            color: #667eea !important;
-        }
-        
-        [data-testid="stMetricLabel"] {
-            color: #a0a0a0 !important;
-            font-size: 0.9rem !important;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        /* ===== EXPANDER MODERNE ===== */
-        .streamlit-expanderHeader {
-            background: rgba(255, 255, 255, 0.05) !important;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            border-radius: 12px !important;
-            color: #ffffff !important;
-            font-weight: 600;
-            padding: 15px !important;
-            transition: all 0.3s ease;
-        }
-        
-        .streamlit-expanderHeader:hover {
-            background: rgba(102, 126, 234, 0.15) !important;
-            border-color: rgba(102, 126, 234, 0.3) !important;
-            transform: translateX(5px);
-        }
-        
-        /* ===== SELECTBOX MODERNE ===== */
-        .stSelectbox > div > div {
-            background: rgba(255, 255, 255, 0.08) !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            border-radius: 12px !important;
-            color: #ffffff !important;
-            transition: all 0.3s ease;
-        }
-        
-        .stSelectbox > div > div:hover {
-            border-color: rgba(102, 126, 234, 0.5) !important;
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
-        }
-        
-        /* ===== ALERTES COLORÉES AVEC ANIMATION ===== */
-        .stSuccess {
-            background: rgba(40, 167, 69, 0.15) !important;
-            border: 1px solid rgba(40, 167, 69, 0.4) !important;
-            border-radius: 12px !important;
-            color: #51cf66 !important;
-            padding: 15px !important;
-            animation: fadeInRight 0.5s ease-out;
-        }
-        
-        .stError {
-            background: rgba(220, 53, 69, 0.15) !important;
-            border: 1px solid rgba(220, 53, 69, 0.4) !important;
-            border-radius: 12px !important;
-            color: #ff6b6b !important;
-            padding: 15px !important;
-            animation: pulse 2s infinite, fadeInRight 0.5s ease-out;
-        }
-        
-        .stWarning {
-            background: rgba(255, 193, 7, 0.15) !important;
-            border: 1px solid rgba(255, 193, 7, 0.4) !important;
-            border-radius: 12px !important;
-            color: #ffd43b !important;
-            padding: 15px !important;
-            animation: fadeInRight 0.5s ease-out;
-        }
-        
-        .stInfo {
-            background: rgba(23, 162, 184, 0.15) !important;
-            border: 1px solid rgba(23, 162, 184, 0.4) !important;
-            border-radius: 12px !important;
-            color: #4dabf7 !important;
-            padding: 15px !important;
-            animation: fadeInRight 0.5s ease-out;
-        }
-        
-        /* ===== FILE UPLOADER ===== */
-        .stFileUploader {
-            background: rgba(255, 255, 255, 0.03);
-            border: 2px dashed rgba(102, 126, 234, 0.4);
-            border-radius: 20px;
-            padding: 30px;
-            transition: all 0.3s ease;
-            animation: fadeIn 0.6s ease-out;
-        }
-        
-        .stFileUploader:hover {
-            border-color: rgba(102, 126, 234, 0.8);
-            background: rgba(102, 126, 234, 0.05);
-            transform: scale(1.01);
-        }
-        
-        /* ===== PROGRESS BAR ANIMÉE ===== */
-        .stProgress > div > div {
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            background-size: 200% 100%;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
-            animation: gradientBG 3s ease infinite;
-        }
-        
-        /* ===== SCROLLBAR MODERNE ===== */
-        ::-webkit-scrollbar {
-            width: 12px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
-            border-radius: 6px;
-            transition: all 0.3s ease;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(180deg, #764ba2 0%, #f093fb 100%);
-        }
-        
-        /* ===== RADIO BUTTONS ===== */
-        .stRadio > label {
-            color: #ffffff !important;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        .stRadio > label:hover {
-            color: #667eea !important;
-            transform: translateX(5px);
-        }
-        
-        /* ===== TOGGLE SWITCH ===== */
-        .stToggle > label {
-            color: #ffffff !important;
-        }
-        
-        /* ===== ANIMATIONS SPÉCIALES ===== */
-        .animate-float {
-            animation: float 3s ease-in-out infinite;
-        }
-        
-        .animate-bounce {
-            animation: bounce 2s ease-in-out infinite;
-        }
-        
-        .animate-spin {
-            animation: spin 2s linear infinite;
-        }
-        
-        /* ===== DATAFRAME MODERNE ===== */
-        .stDataFrame {
-            background: rgba(255, 255, 255, 0.03) !important;
-            border-radius: 12px !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            animation: fadeIn 0.6s ease-out;
-        }
-        
-        /* ===== CONTAINERS ANIMÉS ===== */
-        .element-container {
-            animation: fadeInUp 0.5s ease-out;
-        }
-        
-        /* Effet de brillance sur les cartes critiques */
-        .critical-alert {
-            animation: pulse 2s infinite;
-        }
-        </style>
-        """
-    else:
         return """
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
@@ -493,6 +55,153 @@ def get_css_theme(is_dark=True):
         }
         
         .stApp {
+            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #1a1a2e, #16213e, #0f3460);
+            background-size: 400% 400%;
+            animation: gradientBG 20s ease infinite;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        .stApp > div {
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 15px 0;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transition: all 0.4s ease;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 15px 45px 0 rgba(102, 126, 234, 0.3);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+        
+        section[data-testid="stSidebar"] {
+            background: rgba(15, 12, 41, 0.95);
+            backdrop-filter: blur(30px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            letter-spacing: -1px;
+            animation: gradientBG 5s ease infinite;
+        }
+        
+        h2, h3 {
+            color: #ffffff !important;
+            font-weight: 700;
+        }
+        
+        p, label, div {
+            color: #e0e0e0 !important;
+        }
+        
+        .stButton > button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .stButton > button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
+        }
+        
+        [data-testid="stMetric"] {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.4s ease;
+            animation: scaleIn 0.5s ease-out;
+        }
+        
+        [data-testid="stMetric"]:hover {
+            transform: translateY(-5px) scale(1.03);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        [data-testid="stMetricValue"] {
+            color: #ffffff !important;
+            font-size: 2.5rem !important;
+            font-weight: 800;
+        }
+        
+        .stFileUploader {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px dashed rgba(102, 126, 234, 0.4);
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .stFileUploader:hover {
+            border-color: rgba(102, 126, 234, 0.8);
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .stProgress > div > div {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 200% 100%;
+            border-radius: 10px;
+            animation: gradientBG 3s ease infinite;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 6px;
+        }
+        
+        .stError {
+            animation: pulse 2s infinite;
+        }
+        </style>
+        """
+    else:
+        return """
+        <style>
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .stApp {
             background: linear-gradient(-45deg, #f5f7fa, #c3cfe2, #e0eafc, #cfdef3, #e4e9f2);
             background-size: 400% 400%;
             animation: gradientBG 20s ease infinite;
@@ -511,7 +220,7 @@ def get_css_theme(is_dark=True):
             padding: 25px;
             margin: 15px 0;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.4s ease;
             animation: fadeInUp 0.6s ease-out;
         }
         
@@ -523,7 +232,6 @@ def get_css_theme(is_dark=True):
         section[data-testid="stSidebar"] {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(30px);
-            border-right: 1px solid rgba(0, 0, 0, 0.1);
         }
         
         h1 {
@@ -550,7 +258,7 @@ def get_css_theme(is_dark=True):
             padding: 12px 24px;
             font-weight: 600;
             box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.3s ease;
         }
         
         .stButton > button:hover {
@@ -564,12 +272,10 @@ def get_css_theme(is_dark=True):
             border-radius: 16px;
             padding: 20px;
             transition: all 0.4s ease;
-            animation: scaleIn 0.5s ease-out;
         }
         
         [data-testid="stMetric"]:hover {
             transform: translateY(-5px) scale(1.03);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
         }
         
         [data-testid="stMetricValue"] {
@@ -588,7 +294,6 @@ def get_css_theme(is_dark=True):
         
         .stFileUploader:hover {
             border-color: rgba(102, 126, 234, 0.8);
-            transform: scale(1.01);
         }
         
         .stProgress > div > div {
@@ -736,7 +441,7 @@ with st.sidebar:
     st.markdown("---")
     
     st.markdown("### 🎨 Apparence")
-    dark_mode = st.toggle(" Mode Sombre", value=st.session_state.dark_mode)
+    dark_mode = st.toggle("🌙 Mode Sombre", value=st.session_state.dark_mode)
     st.session_state.dark_mode = dark_mode
     
     css = get_css_theme(dark_mode)
@@ -745,8 +450,8 @@ with st.sidebar:
     st.markdown("---")
     
     page = st.radio(
-        "🧭 Navigation",
-        ["📊 Tableau de bord", " Analyser des PDFs", "📁 Historique par Fichier", "📅 Plan de Surveillance"]
+        " Navigation",
+        ["📊 Tableau de bord", "📤 Analyser des PDFs", "📁 Historique par Fichier", " Plan de Surveillance"]
     )
     
     st.markdown("---")
@@ -766,7 +471,7 @@ with st.sidebar:
     """)
 
 # =============================================================================
-# PAGE 1: TABLEAU DE BORD (RESTAURÉ AVEC ANIMATIONS)
+# PAGE 1: TABLEAU DE BORD
 # =============================================================================
 
 if page == "📊 Tableau de bord":
@@ -775,14 +480,13 @@ if page == "📊 Tableau de bord":
     stats = get_statistiques_generales()
     historique = get_historique_analyses(limit=100)
     
-    # KPIs avec animations
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         st.metric("📋 Total Analyses", stats['total_analyses'])
     with col2:
         st.metric(
-            "🚨 Non-Conformités",
+            " Non-Conformités",
             stats['total_nc'],
             delta=f"{stats['taux_nc']:.1f}% du total",
             delta_color="inverse" if stats['taux_nc'] > 10 else "normal"
@@ -803,7 +507,6 @@ if page == "📊 Tableau de bord":
     
     st.markdown("---")
     
-    # Graphiques avec animations Plotly
     col1, col2 = st.columns(2)
     
     with col1:
@@ -824,11 +527,6 @@ if page == "📊 Tableau de bord":
                 font=dict(color='white' if dark_mode else 'black'),
                 transition=dict(duration=1000, easing='cubic-in-out')
             )
-            # Animation des barres
-            fig_rayon.update_traces(
-                marker=dict(line=dict(width=2, color='rgba(255,255,255,0.3)')),
-                hovertemplate='<b>%{x}</b><br>NC: %{y}<extra></extra>'
-            )
             st.plotly_chart(fig_rayon, use_container_width=True)
         else:
             st.info("Aucune NC enregistrée")
@@ -848,18 +546,12 @@ if page == "📊 Tableau de bord":
                 font=dict(color='white' if dark_mode else 'black'),
                 transition=dict(duration=1000)
             )
-            # Animation du camembert
-            fig_microbe.update_traces(
-                hoverinfo='label+percent+value',
-                textinfo='label+percent',
-                marker=dict(line=dict(color='rgba(255,255,255,0.3)', width=2))
-            )
             st.plotly_chart(fig_microbe, use_container_width=True)
         else:
             st.info("Aucun microbe détecté")
     
     st.markdown("---")
-    st.markdown("### ⚠️ Alertes Actives")
+    st.markdown("### ️ Alertes Actives")
     
     plan_actif = get_plan_surveillance_actuel()
     if plan_actif:
@@ -870,9 +562,6 @@ if page == "📊 Tableau de bord":
                     'TRES RENFORCE': '🟠',
                     'RENFORCE': '🟡'
                 }.get(item['statut_surveillance'], '')
-                
-                # Classe CSS pour animation pulse si critique
-                css_class = "critical-alert" if item['statut_surveillance'] == 'CRISE' else ""
                 
                 with st.expander(f"{couleur} {item['rayon']} - {item['produit'] or 'Tous produits'}"):
                     st.write(f"**Statut :** {item['statut_surveillance']}")
@@ -886,7 +575,7 @@ if page == "📊 Tableau de bord":
 # =============================================================================
 
 elif page == "📤 Analyser des PDFs":
-    st.markdown("##  Analyse de rapports microbiologiques")
+    st.markdown("## 📤 Analyse de rapports microbiologiques")
     
     uploaded_files = st.file_uploader(
         "Choisissez des fichiers PDF",
@@ -947,7 +636,7 @@ elif page == "📤 Analyser des PDFs":
                 donnees = res['donnees_rapport']
                 is_nc = res['non_conforme']
                 
-                icon = "🚨" if is_nc else "✅"
+                icon = "" if is_nc else "✅"
                 st.markdown(f"### {icon} {donnees.get('produit', 'N/A')}")
                 
                 col1, col2 = st.columns(2)
@@ -962,11 +651,11 @@ elif page == "📤 Analyser des PDFs":
                 for analyse in donnees.get('analyses', []):
                     eval_upper = analyse.get('evaluation', '').upper()
                     if 'CRITIQUE' in eval_upper or 'DÉFAUT' in eval_upper:
-                        icone = "🔴"
+                        icone = ""
                     elif 'NON CONFORME' in eval_upper:
                         icone = "🟠"
                     else:
-                        icone = "🟢"
+                        icone = ""
                     
                     st.write(f"- {icone} **{analyse.get('parametre')}** : {analyse.get('resultat')} (Limite: {analyse.get('limite')}) - *{analyse.get('evaluation')}*")
                 
@@ -990,7 +679,7 @@ elif page == "📤 Analyser des PDFs":
 # PAGE 3: HISTORIQUE PAR FICHIER
 # =============================================================================
 
-elif page == " Historique par Fichier":
+elif page == "📁 Historique par Fichier":
     st.markdown("## 📁 Historique détaillé par fichier PDF")
     
     historique = get_historique_analyses(limit=100)
@@ -1027,7 +716,7 @@ elif page == " Historique par Fichier":
                 st.metric("🚨 Non-conformités", nb_nc)
             with col3:
                 taux = (nb_nc / len(analyses_fichier) * 100) if len(analyses_fichier) > 0 else 0
-                st.metric("📈 Taux de NC", f"{taux:.1f}%")
+                st.metric(" Taux de NC", f"{taux:.1f}%")
             
             st.markdown("---")
             
@@ -1052,7 +741,7 @@ elif page == " Historique par Fichier":
                 st.plotly_chart(fig_pie, use_container_width=True)
             
             with col2:
-                st.markdown("### 🏪 Répartition par Rayon")
+                st.markdown("###  Répartition par Rayon")
                 rayons = {}
                 for a in analyses_fichier:
                     donnees = json.loads(a['donnees_completes'])
@@ -1093,7 +782,7 @@ elif page == " Historique par Fichier":
                 
                 st.markdown(f"""
                 <div class="glass-card">
-                <h3>{'🚨' if is_nc else '✅'} Analyse {i} - {produit}</h3>
+                <h3>{'' if is_nc else '✅'} Analyse {i} - {produit}</h3>
                 </div>
                 """, unsafe_allow_html=True)
                 
@@ -1105,7 +794,7 @@ elif page == " Historique par Fichier":
                 with col3:
                     st.metric("🆔 Dossier", dossier)
                 with col4:
-                    statut_text = " NON CONFORME" if is_nc else "🟢 CONFORME"
+                    statut_text = "🔴 NON CONFORME" if is_nc else "🟢 CONFORME"
                     st.metric("📊 Statut", statut_text)
                 
                 analyses = donnees_rapport.get('analyses', [])
@@ -1194,8 +883,8 @@ elif page == " Historique par Fichier":
 # PAGE 4: PLAN DE SURVEILLANCE
 # =============================================================================
 
-elif page == " Plan de Surveillance":
-    st.markdown("## 📅 Plan de Surveillance Adaptatif")
+elif page == "📅 Plan de Surveillance":
+    st.markdown("##  Plan de Surveillance Adaptatif")
     
     st.markdown("""
     Ce plan est **automatiquement ajusté** selon l'historique des NC.
@@ -1219,7 +908,7 @@ elif page == " Plan de Surveillance":
                 st.markdown(f"### {statut_colors[statut]} {statut}")
                 
                 for _, row in df_filtre.iterrows():
-                    with st.expander(f"🏪 **{row['rayon']}** - {row['produit'] or 'Tous produits'}"):
+                    with st.expander(f" **{row['rayon']}** - {row['produit'] or 'Tous produits'}"):
                         col1, col2, col3 = st.columns(3)
                         with col1:
                             st.metric("Fréquence", f"{row['frequence_mois']}x/mois")
