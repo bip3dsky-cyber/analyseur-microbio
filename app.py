@@ -1,5 +1,5 @@
 # =============================================================================
-# APPLICATION WEB STREAMLIT - ANALYSEUR MICROBIOLOGIQUE (VERSION MODERNE)
+# APPLICATION WEB STREAMLIT - ANALYSEUR MICROBIOLOGIQUE (ULTRA MODERNE)
 # =============================================================================
 
 import streamlit as st
@@ -11,30 +11,27 @@ import plotly.express as px
 import plotly.graph_objects as go
 import requests
 import pdfplumber
-import tempfile
 
 # Import des modules locaux
 from database import (
     init_database, sauvegarder_analyse, get_historique_analyses,
-    get_plan_surveillance_actuel, get_statistiques_generales,
-    get_analyses_par_fichier
+    get_plan_surveillance_actuel, get_statistiques_generales
 )
 
 # =============================================================================
-# CSS MODERNE - GLASSMORPHISME + DARK/LIGHT MODE
+# CSS ULTRA MODERNE - GLASSMORPHISME + ANIMATIONS
 # =============================================================================
 
 def get_css_theme(is_dark=True):
-    """Retourne le CSS selon le thème choisi"""
     if is_dark:
         return """
         <style>
-        /* Fond animé avec gradient */
+        /* Fond animé avec gradient dynamique */
         .stApp {
-            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #1a1a2e);
+            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #1a1a2e, #16213e);
             background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            animation: gradientBG 20s ease infinite;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
         
         @keyframes gradientBG {
@@ -43,29 +40,48 @@ def get_css_theme(is_dark=True):
             100% { background-position: 0% 50%; }
         }
         
-        /* Glassmorphisme pour les cartes */
+        /* Glassmorphisme avancé */
         .glass-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 20px;
-            margin: 10px 0;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
-        
-        /* Sidebar glassmorphisme */
-        section[data-testid="stSidebar"] {
-            background: rgba(15, 12, 41, 0.8);
+            background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 15px 0;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
         }
         
-        /* Titres */
-        h1, h2, h3 {
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+        
+        /* Sidebar moderne */
+        section[data-testid="stSidebar"] {
+            background: rgba(15, 12, 41, 0.95);
+            backdrop-filter: blur(30px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Titres avec gradient */
+        h1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+        
+        h2, h3 {
             color: #ffffff !important;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
         
         /* Texte */
@@ -73,134 +89,171 @@ def get_css_theme(is_dark=True):
             color: #e0e0e0 !important;
         }
         
-        /* Boutons */
+        /* Boutons avec effet néon */
         .stButton > button {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white !important;
             border: none;
-            border-radius: 10px;
-            padding: 10px 20px;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4),
+                        0 0 0 0 rgba(102, 126, 234, 0.7);
             transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .stButton > button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6),
+                        0 0 0 8px rgba(102, 126, 234, 0.1);
         }
         
-        /* Metrics */
+        /* Metrics cards */
         [data-testid="stMetric"] {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 15px;
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        [data-testid="stMetric"]:hover {
+            transform: scale(1.02);
+            background: rgba(255, 255, 255, 0.08);
         }
         
         [data-testid="stMetricValue"] {
             color: #ffffff !important;
-            font-size: 2rem !important;
+            font-size: 2.5rem !important;
+            font-weight: 800;
         }
         
         [data-testid="stMetricLabel"] {
             color: #a0a0a0 !important;
+            font-size: 0.9rem !important;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
-        /* Expander */
+        /* Expander moderne */
         .streamlit-expanderHeader {
             background: rgba(255, 255, 255, 0.05) !important;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            border-radius: 10px !important;
+            border-radius: 12px !important;
             color: #ffffff !important;
+            font-weight: 600;
+            padding: 15px !important;
+            transition: all 0.3s ease;
         }
         
-        /* Selectbox et inputs */
+        .streamlit-expanderHeader:hover {
+            background: rgba(255, 255, 255, 0.08) !important;
+        }
+        
+        /* Selectbox moderne */
         .stSelectbox > div > div {
-            background: rgba(255, 255, 255, 0.1) !important;
+            background: rgba(255, 255, 255, 0.08) !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            border-radius: 10px !important;
+            border-radius: 12px !important;
             color: #ffffff !important;
+            transition: all 0.3s ease;
         }
         
-        /* Success/Error/Warning boxes */
+        .stSelectbox > div > div:hover {
+            border-color: rgba(102, 126, 234, 0.5) !important;
+        }
+        
+        /* Alertes colorées */
         .stSuccess {
-            background: rgba(40, 167, 69, 0.2) !important;
-            border: 1px solid rgba(40, 167, 69, 0.5) !important;
-            border-radius: 10px !important;
+            background: rgba(40, 167, 69, 0.15) !important;
+            border: 1px solid rgba(40, 167, 69, 0.4) !important;
+            border-radius: 12px !important;
             color: #51cf66 !important;
+            padding: 15px !important;
         }
         
         .stError {
-            background: rgba(220, 53, 69, 0.2) !important;
-            border: 1px solid rgba(220, 53, 69, 0.5) !important;
-            border-radius: 10px !important;
+            background: rgba(220, 53, 69, 0.15) !important;
+            border: 1px solid rgba(220, 53, 69, 0.4) !important;
+            border-radius: 12px !important;
             color: #ff6b6b !important;
+            padding: 15px !important;
         }
         
         .stWarning {
-            background: rgba(255, 193, 7, 0.2) !important;
-            border: 1px solid rgba(255, 193, 7, 0.5) !important;
-            border-radius: 10px !important;
+            background: rgba(255, 193, 7, 0.15) !important;
+            border: 1px solid rgba(255, 193, 7, 0.4) !important;
+            border-radius: 12px !important;
             color: #ffd43b !important;
+            padding: 15px !important;
         }
         
         .stInfo {
-            background: rgba(23, 162, 184, 0.2) !important;
-            border: 1px solid rgba(23, 162, 184, 0.5) !important;
-            border-radius: 10px !important;
+            background: rgba(23, 162, 184, 0.15) !important;
+            border: 1px solid rgba(23, 162, 184, 0.4) !important;
+            border-radius: 12px !important;
             color: #4dabf7 !important;
-        }
-        
-        /* Dataframe */
-        .stDataFrame {
-            background: rgba(255, 255, 255, 0.05) !important;
-            border-radius: 10px !important;
-        }
-        
-        /* Radio buttons */
-        .stRadio > label {
-            color: #ffffff !important;
+            padding: 15px !important;
         }
         
         /* File uploader */
         .stFileUploader {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px dashed rgba(102, 126, 234, 0.4);
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .stFileUploader:hover {
+            border-color: rgba(102, 126, 234, 0.8);
             background: rgba(255, 255, 255, 0.05);
-            border: 2px dashed rgba(255, 255, 255, 0.3);
-            border-radius: 15px;
-            padding: 20px;
         }
         
         /* Progress bar */
         .stProgress > div > div {
             background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
             border-radius: 10px;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
         }
         
         /* Scrollbar */
         ::-webkit-scrollbar {
-            width: 10px;
+            width: 12px;
         }
         ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
+            background: rgba(0, 0, 0, 0.2);
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(102, 126, 234, 0.5);
-            border-radius: 5px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 6px;
+        }
+        
+        /* Radio buttons */
+        .stRadio > label {
+            color: #ffffff !important;
+            font-weight: 500;
+        }
+        
+        /* Toggle switch */
+        .stToggle > label {
+            color: #ffffff !important;
         }
         </style>
         """
     else:
         return """
         <style>
-        /* Fond clair avec gradient doux */
         .stApp {
-            background: linear-gradient(-45deg, #f5f7fa, #c3cfe2, #e0eafc, #cfdef3);
+            background: linear-gradient(-45deg, #f5f7fa, #c3cfe2, #e0eafc, #cfdef3, #e4e9f2);
             background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            animation: gradientBG 20s ease infinite;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
         
         @keyframes gradientBG {
@@ -209,111 +262,78 @@ def get_css_theme(is_dark=True):
             100% { background-position: 0% 50%; }
         }
         
-        /* Glassmorphisme clair */
         .glass-card {
             background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 15px;
-            padding: 20px;
-            margin: 10px 0;
+            border-radius: 20px;
+            padding: 25px;
+            margin: 15px 0;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            transition: all 0.3s ease;
         }
         
-        /* Sidebar */
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.25);
+        }
+        
         section[data-testid="stSidebar"] {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(30px);
             border-right: 1px solid rgba(0, 0, 0, 0.1);
         }
         
-        /* Titres */
-        h1, h2, h3 {
-            color: #2c3e50 !important;
+        h1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
         }
         
-        /* Texte */
+        h2, h3 {
+            color: #2c3e50 !important;
+            font-weight: 700;
+        }
+        
         p, label, div {
             color: #34495e !important;
         }
         
-        /* Boutons */
         .stButton > button {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white !important;
             border: none;
-            border-radius: 10px;
-            padding: 10px 20px;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
             transition: all 0.3s ease;
         }
         
         .stButton > button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
         }
         
-        /* Metrics */
         [data-testid="stMetric"] {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.8);
             border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 10px;
-            padding: 15px;
+            border-radius: 16px;
+            padding: 20px;
         }
         
         [data-testid="stMetricValue"] {
             color: #2c3e50 !important;
-            font-size: 2rem !important;
+            font-size: 2.5rem !important;
+            font-weight: 800;
         }
         
-        [data-testid="stMetricLabel"] {
-            color: #7f8c8d !important;
-        }
-        
-        /* Expander */
-        .streamlit-expanderHeader {
-            background: rgba(255, 255, 255, 0.7) !important;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 0, 0, 0.1) !important;
-            border-radius: 10px !important;
-            color: #2c3e50 !important;
-        }
-        
-        /* Selectbox */
-        .stSelectbox > div > div {
-            background: rgba(255, 255, 255, 0.9) !important;
-            border: 1px solid rgba(0, 0, 0, 0.2) !important;
-            border-radius: 10px !important;
-            color: #2c3e50 !important;
-        }
-        
-        /* File uploader */
         .stFileUploader {
             background: rgba(255, 255, 255, 0.7);
-            border: 2px dashed rgba(102, 126, 234, 0.5);
-            border-radius: 15px;
-            padding: 20px;
-        }
-        
-        /* Progress bar */
-        .stProgress > div > div {
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            border-radius: 10px;
-        }
-        
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 10px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.05);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(102, 126, 234, 0.5);
-            border-radius: 5px;
+            border: 2px dashed rgba(102, 126, 234, 0.4);
+            border-radius: 20px;
+            padding: 30px;
         }
         </style>
         """
@@ -436,7 +456,6 @@ JSON :
 
 init_database()
 
-# Session state pour le thème
 if 'dark_mode' not in st.session_state:
     st.session_state.dark_mode = True
 
@@ -445,7 +464,6 @@ if 'dark_mode' not in st.session_state:
 # =============================================================================
 
 with st.sidebar:
-    # Logo
     logo_path = "assets/logo.png"
     if os.path.exists(logo_path):
         try:
@@ -457,21 +475,18 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # Toggle Dark/Light Mode
     st.markdown("### 🎨 Apparence")
-    dark_mode = st.toggle(" Mode Sombre", value=st.session_state.dark_mode)
+    dark_mode = st.toggle("🌙 Mode Sombre", value=st.session_state.dark_mode)
     st.session_state.dark_mode = dark_mode
     
-    # Appliquer le CSS
     css = get_css_theme(dark_mode)
     st.markdown(css, unsafe_allow_html=True)
     
     st.markdown("---")
     
-    # Navigation
     page = st.radio(
-        " Navigation",
-        ["📊 Tableau de bord", "📤 Analyser des PDFs", "📁 Historique par Fichier", " Plan de Surveillance"]
+        "🧭 Navigation",
+        [" Tableau de bord", "📤 Analyser des PDFs", "📁 Historique par Fichier", "📅 Plan de Surveillance"]
     )
     
     st.markdown("---")
@@ -487,6 +502,7 @@ with st.sidebar:
     - Détection NC
     - Plans d'action intelligents
     - Historique par fichier
+    - Plan de surveillance adaptatif
     """)
 
 # =============================================================================
@@ -499,7 +515,6 @@ if page == "📊 Tableau de bord":
     stats = get_statistiques_generales()
     historique = get_historique_analyses(limit=100)
     
-    # KPIs
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
@@ -527,7 +542,6 @@ if page == "📊 Tableau de bord":
     
     st.markdown("---")
     
-    # Graphiques
     col1, col2 = st.columns(2)
     
     with col1:
@@ -578,7 +592,7 @@ if page == "📊 Tableau de bord":
             if item['statut_surveillance'] != 'NORMAL':
                 couleur = {
                     'CRISE': '🔴',
-                    'TRES RENFORCE': '',
+                    'TRES RENFORCE': '🟠',
                     'RENFORCE': '🟡'
                 }.get(item['statut_surveillance'], '')
                 
@@ -605,7 +619,7 @@ elif page == "📤 Analyser des PDFs":
     if uploaded_files:
         st.write(f" {len(uploaded_files)} fichier(s) sélectionné(s)")
         
-        if st.button(" Lancer l'analyse", type="primary"):
+        if st.button("🚀 Lancer l'analyse", type="primary"):
             progress_bar = st.progress(0)
             status_text = st.empty()
             
@@ -648,9 +662,8 @@ elif page == "📤 Analyser des PDFs":
             status_text.text("✅ Analyse terminée !")
             st.success(f"{len(resultats)} rapport(s) analysé(s) !")
             
-            # Afficher les résultats
             st.markdown("---")
-            st.markdown("###  Résultats")
+            st.markdown("### 📊 Résultats")
             
             for res in resultats:
                 donnees = res['donnees_rapport']
@@ -671,11 +684,11 @@ elif page == "📤 Analyser des PDFs":
                 for analyse in donnees.get('analyses', []):
                     eval_upper = analyse.get('evaluation', '').upper()
                     if 'CRITIQUE' in eval_upper or 'DÉFAUT' in eval_upper:
-                        icone = "🔴"
+                        icone = ""
                     elif 'NON CONFORME' in eval_upper:
                         icone = "🟠"
                     else:
-                        icone = "🟢"
+                        icone = ""
                     
                     st.write(f"- {icone} **{analyse.get('parametre')}** : {analyse.get('resultat')} (Limite: {analyse.get('limite')}) - *{analyse.get('evaluation')}*")
                 
@@ -691,12 +704,12 @@ elif page == "📤 Analyser des PDFs":
                     st.markdown("**📅 Plan mois suivant :**")
                     for action in plan.get('plan_mois_suivant', []):
                         if isinstance(action, dict):
-                            st.write(f"-  **{action.get('titre')}** : {action.get('description')}")
+                            st.write(f"- ➕ **{action.get('titre')}** : {action.get('description')}")
                 
                 st.markdown("---")
 
 # =============================================================================
-# PAGE 3: HISTORIQUE PAR FICHIER (NOUVEAU)
+# PAGE 3: HISTORIQUE PAR FICHIER (CORRIGÉ)
 # =============================================================================
 
 elif page == "📁 Historique par Fichier":
@@ -705,26 +718,22 @@ elif page == "📁 Historique par Fichier":
     historique = get_historique_analyses(limit=100)
     
     if not historique:
-        st.info(" Aucune analyse enregistrée. Analysez d'abord des PDFs.")
+        st.info("📭 Aucune analyse enregistrée. Analysez d'abord des PDFs.")
     else:
-        # Grouper par nom de fichier
         fichiers_uniques = list(set([h['fichier_pdf'] for h in historique]))
         
-        st.markdown(f"### 📋 {len(fichiers_uniques)} fichier(s) analysé(s)")
+        st.markdown(f"###  {len(fichiers_uniques)} fichier(s) analysé(s)")
         
-        # Sélecteur de fichier
         fichier_selectionne = st.selectbox(
             "🔍 Sélectionnez un fichier pour voir les détails",
             fichiers_uniques
         )
         
         if fichier_selectionne:
-            # Récupérer toutes les analyses de ce fichier
             analyses_fichier = [h for h in historique if h['fichier_pdf'] == fichier_selectionne]
             
             st.markdown("---")
             
-            # En-tête du fichier
             is_nc_global = any(a['non_conforme'] for a in analyses_fichier)
             
             if is_nc_global:
@@ -732,10 +741,9 @@ elif page == "📁 Historique par Fichier":
             else:
                 st.success(f"✅ **Fichier :** {fichier_selectionne}")
             
-            # Stats du fichier
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric("📊 Total analyses", len(analyses_fichier))
+                st.metric(" Total analyses", len(analyses_fichier))
             with col2:
                 nb_nc = sum(1 for a in analyses_fichier if a['non_conforme'])
                 st.metric("🚨 Non-conformités", nb_nc)
@@ -745,11 +753,10 @@ elif page == "📁 Historique par Fichier":
             
             st.markdown("---")
             
-            # Graphique camembert du fichier
             col1, col2 = st.columns(2)
             
             with col1:
-                st.markdown("### 📊 Répartition Conformité")
+                st.markdown("###  Répartition Conformité")
                 nb_conforme = len(analyses_fichier) - nb_nc
                 fig_pie = go.Figure(data=[go.Pie(
                     labels=['Conformes', 'Non-conformes'],
@@ -766,11 +773,11 @@ elif page == "📁 Historique par Fichier":
                 st.plotly_chart(fig_pie, use_container_width=True)
             
             with col2:
-                st.markdown("###  Répartition par Rayon")
+                st.markdown("### 🏪 Répartition par Rayon")
                 rayons = {}
                 for a in analyses_fichier:
                     donnees = json.loads(a['donnees_completes'])
-                    rayon = donnees.get('rayon', 'Inconnu')
+                    rayon = donnees.get('donnees_rapport', {}).get('rayon', 'Inconnu')
                     rayons[rayon] = rayons.get(rayon, 0) + 1
                 
                 if rayons:
@@ -791,43 +798,43 @@ elif page == "📁 Historique par Fichier":
                     st.plotly_chart(fig_bar, use_container_width=True)
             
             st.markdown("---")
-            
-            # Détails de chaque analyse du fichier
             st.markdown("### 🔬 Détails des analyses")
             
             for i, analyse in enumerate(analyses_fichier, 1):
-                donnees = json.loads(analyse['donnees_completes'])
-                is_nc = analyse['non_conforme']
+                # CORRECTION: Parser correctement les données
+                donnees_completes = json.loads(analyse['donnees_completes'])
+                donnees_rapport = donnees_completes.get('donnees_rapport', donnees_completes)
                 
-                # Carte glassmorphisme pour chaque analyse
+                is_nc = analyse['non_conforme']
+                produit = donnees_rapport.get('produit', 'N/A')
+                rayon = donnees_rapport.get('rayon', 'N/A')
+                date = donnees_rapport.get('date_prelevement', 'N/A')
+                dossier = donnees_rapport.get('dossier_id', 'N/A')
+                
                 st.markdown(f"""
                 <div class="glass-card">
-                <h3>{'' if is_nc else '✅'} Analyse {i} - {donnees.get('produit', 'N/A')}</h3>
+                <h3>{'🚨' if is_nc else '✅'} Analyse {i} - {produit}</h3>
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # Infos principales
                 col1, col2, col3, col4 = st.columns(4)
                 with col1:
-                    st.metric(" Rayon", donnees.get('rayon', 'N/A'))
+                    st.metric("🏪 Rayon", rayon)
                 with col2:
-                    st.metric("📅 Date", donnees.get('date_prelevement', 'N/A'))
+                    st.metric("📅 Date", date)
                 with col3:
-                    st.metric("🆔 Dossier", donnees.get('dossier_id', 'N/A'))
+                    st.metric("🆔 Dossier", dossier)
                 with col4:
                     statut_text = "🔴 NON CONFORME" if is_nc else "🟢 CONFORME"
                     st.metric("📊 Statut", statut_text)
                 
-                # Graphique des résultats
-                analyses = donnees.get('analyses', [])
+                analyses = donnees_rapport.get('analyses', [])
                 if analyses:
-                    st.markdown("#### 📈 Résultats des analyses")
+                    st.markdown("####  Résultats des analyses")
                     
-                    # Préparer données pour graphique
                     parametres = [a.get('parametre', 'N/A') for a in analyses]
                     evaluations = [a.get('evaluation', 'N/A') for a in analyses]
                     
-                    # Couleurs selon évaluation
                     colors = []
                     for eval_val in evaluations:
                         eval_upper = eval_val.upper()
@@ -861,7 +868,6 @@ elif page == "📁 Historique par Fichier":
                     
                     st.plotly_chart(fig, use_container_width=True)
                     
-                    # Tableau détaillé
                     st.markdown("#### 📋 Tableau détaillé")
                     df_analyses = pd.DataFrame(analyses)
                     df_display = df_analyses.rename(columns={
@@ -872,15 +878,13 @@ elif page == "📁 Historique par Fichier":
                     })
                     st.dataframe(df_display, use_container_width=True)
                 
-                # Commentaire labo
-                if donnees.get('commentaire_lab'):
+                if donnees_rapport.get('commentaire_lab'):
                     st.markdown("#### 💬 Commentaire du laboratoire")
                     if is_nc:
-                        st.error(donnees.get('commentaire_lab'))
+                        st.error(donnees_rapport.get('commentaire_lab'))
                     else:
-                        st.info(donnees.get('commentaire_lab'))
+                        st.info(donnees_rapport.get('commentaire_lab'))
                 
-                # Plan d'action
                 if is_nc and analyse.get('plan_action'):
                     st.markdown("#### 📋 Plan d'action")
                     plan = json.loads(analyse['plan_action'])
@@ -906,11 +910,11 @@ elif page == "📁 Historique par Fichier":
                 st.markdown("---")
 
 # =============================================================================
-# PAGE 4: PLAN DE SURVEILLANCE
+# PAGE 4: PLAN DE SURVEILLANCE (ACTIF)
 # =============================================================================
 
 elif page == "📅 Plan de Surveillance":
-    st.markdown("##  Plan de Surveillance Adaptatif")
+    st.markdown("## 📅 Plan de Surveillance Adaptatif")
     
     st.markdown("""
     Ce plan est **automatiquement ajusté** selon l'historique des NC.
@@ -943,11 +947,13 @@ elif page == "📅 Plan de Surveillance":
                         with col3:
                             dernier = datetime.fromisoformat(row['dernier_incident']).strftime('%d/%m/%Y') if row['dernier_incident'] else 'Jamais'
                             st.metric("Dernier incident", dernier)
+                        
+                        st.info(f"**Dernière mise à jour :** {datetime.fromisoformat(row['date_mise_a_jour']).strftime('%d/%m/%Y à %H:%M')}")
     else:
-        st.info("📭 Aucun plan enregistré")
+        st.info(" Aucun plan de surveillance enregistré. Analysez vos premiers PDFs pour commencer.")
     
     st.markdown("---")
-    st.markdown("### 💡 Recommandations")
+    st.markdown("### 💡 Recommandations du mois")
     
     total_renforce = sum(1 for p in plan if p['statut_surveillance'] != 'NORMAL') if plan else 0
     
@@ -956,16 +962,17 @@ elif page == "📅 Plan de Surveillance":
         **Action requise :** {total_renforce} produit(s) en surveillance renforcée
         
         **Recommandations :**
-        - Augmenter la fréquence des prélèvements
-        - Vérifier les fournisseurs
-        - Renforcer les formations hygiène
-        - Contrôler les températures
+        - Augmenter la fréquence des prélèvements selon le tableau ci-dessus
+        - Vérifier les fournisseurs des produits concernés
+        - Renforcer les formations hygiène du personnel
+        - Contrôler les températures de conservation
         """)
     else:
         st.success("""
         **Situation normale**
         
-        Tous les produits en surveillance standard (1 analyse/mois).
+        Tous les produits sont en surveillance standard (1 analyse/mois).
+        Continuez le suivi régulier.
         """)
 
 # =============================================================================
@@ -975,7 +982,7 @@ elif page == "📅 Plan de Surveillance":
 st.markdown("---")
 st.markdown("""
 <div style='text-align: center; opacity: 0.7;'>
-    <p>🔬 Analyseur Microbiologique Intelligent | Powered by Groq (Llama 3) + Streamlit</p>
+    <p> Analyseur Microbiologique Intelligent | Powered by Groq (Llama 3) + Streamlit</p>
     <p>Design Glassmorphisme - Mode Sombre/Clair</p>
 </div>
 """, unsafe_allow_html=True)

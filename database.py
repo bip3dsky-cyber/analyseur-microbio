@@ -64,6 +64,8 @@ def sauvegarder_analyse(donnees: Dict, plan_action: Optional[Dict] = None):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
+    donnees_rapport = donnees.get('donnees_rapport', donnees)
+    
     cursor.execute("""
         INSERT INTO analyses (
             fichier_pdf, dossier_id, date_prelevement, date_analyse_systeme,
@@ -72,13 +74,13 @@ def sauvegarder_analyse(donnees: Dict, plan_action: Optional[Dict] = None):
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         donnees.get('fichier', ''),
-        donnees.get('donnees_rapport', {}).get('dossier_id', ''),
-        donnees.get('donnees_rapport', {}).get('date_prelevement', ''),
+        donnees_rapport.get('dossier_id', ''),
+        donnees_rapport.get('date_prelevement', ''),
         datetime.now().isoformat(),
-        donnees.get('donnees_rapport', {}).get('site', ''),
-        donnees.get('donnees_rapport', {}).get('rayon', ''),
-        donnees.get('donnees_rapport', {}).get('produit', ''),
-        donnees.get('donnees_rapport', {}).get('statut_global', ''),
+        donnees_rapport.get('site', ''),
+        donnees_rapport.get('rayon', ''),
+        donnees_rapport.get('produit', ''),
+        donnees_rapport.get('statut_global', ''),
         1 if donnees.get('non_conforme', False) else 0,
         plan_action.get('niveau_risque', '') if plan_action else '',
         json.dumps(donnees, ensure_ascii=False),
@@ -87,7 +89,7 @@ def sauvegarder_analyse(donnees: Dict, plan_action: Optional[Dict] = None):
     
     analyse_id = cursor.lastrowid
     
-    for microbe in donnees.get('donnees_rapport', {}).get('analyses', []):
+    for microbe in donnees_rapport.get('analyses', []):
         cursor.execute("""
             INSERT INTO microbes_detectes (
                 analyse_id, parametre, resultat, limite, evaluation
@@ -103,8 +105,8 @@ def sauvegarder_analyse(donnees: Dict, plan_action: Optional[Dict] = None):
     if donnees.get('non_conforme', False):
         _mettre_a_jour_plan_surveillance(
             cursor,
-            donnees.get('donnees_rapport', {}).get('rayon', ''),
-            donnees.get('donnees_rapport', {}).get('produit', ''),
+            donnees_rapport.get('rayon', ''),
+            donnees_rapport.get('produit', ''),
             plan_action
         )
     
@@ -167,22 +169,6 @@ def get_historique_analyses(limit: int = 50) -> List[Dict]:
         ORDER BY date_analyse_systeme DESC
         LIMIT ?
     """, (limit,))
-    
-    resultats = [dict(row) for row in cursor.fetchall()]
-    conn.close()
-    return resultats
-
-def get_analyses_par_fichier(fichier_pdf: str) -> List[Dict]:
-    """Récupère toutes les analyses d'un fichier spécifique"""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-    
-    cursor.execute("""
-        SELECT * FROM analyses
-        WHERE fichier_pdf = ?
-        ORDER BY date_analyse_systeme DESC
-    """, (fichier_pdf,))
     
     resultats = [dict(row) for row in cursor.fetchall()]
     conn.close()
