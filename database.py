@@ -1,5 +1,5 @@
 # =============================================================================
-# GESTION DE LA BASE DE DONNÉES (MÉMOIRE DU SYSTÈME)
+# GESTION DE LA BASE DE DONNÉES
 # =============================================================================
 
 import sqlite3
@@ -11,11 +11,9 @@ import os
 DB_PATH = "historique_analyses.db"
 
 def init_database():
-    """Initialise la base de données avec les tables nécessaires"""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
-    # Table des analyses
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS analyses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,7 +32,6 @@ def init_database():
         )
     """)
     
-    # Table des microbes détectés
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS microbes_detectes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,7 +44,6 @@ def init_database():
         )
     """)
     
-    # Table du plan d'analyse dynamique
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS plan_surveillance (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -65,11 +61,9 @@ def init_database():
     conn.close()
 
 def sauvegarder_analyse(donnees: Dict, plan_action: Optional[Dict] = None):
-    """Sauvegarde une analyse complète dans la base"""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
-    # Insérer l'analyse principale
     cursor.execute("""
         INSERT INTO analyses (
             fichier_pdf, dossier_id, date_prelevement, date_analyse_systeme,
@@ -93,7 +87,6 @@ def sauvegarder_analyse(donnees: Dict, plan_action: Optional[Dict] = None):
     
     analyse_id = cursor.lastrowid
     
-    # Insérer les microbes détectés
     for microbe in donnees.get('donnees_rapport', {}).get('analyses', []):
         cursor.execute("""
             INSERT INTO microbes_detectes (
@@ -107,7 +100,6 @@ def sauvegarder_analyse(donnees: Dict, plan_action: Optional[Dict] = None):
             microbe.get('evaluation', '')
         ))
     
-    # Mettre à jour le plan de surveillance si NC
     if donnees.get('non_conforme', False):
         _mettre_a_jour_plan_surveillance(
             cursor,
@@ -120,41 +112,32 @@ def sauvegarder_analyse(donnees: Dict, plan_action: Optional[Dict] = None):
     conn.close()
 
 def _mettre_a_jour_plan_surveillance(cursor, rayon: str, produit: str, plan_action: Dict):
-    """Met à jour automatiquement la fréquence de surveillance"""
-    
     cursor.execute("""
-        SELECT id, nb_incidents_3mois FROM plan_surveillance
+        SELECT id FROM plan_surveillance
         WHERE rayon = ? AND (produit = ? OR produit = '')
     """, (rayon, produit))
     
     existing = cursor.fetchone()
     
-    # Calculer le nombre d'incidents (3 derniers mois)
     trois_mois_avant = (datetime.now() - timedelta(days=90)).isoformat()
     cursor.execute("""
-        SELECT COUNT(*) FROM analyses a
-        JOIN microbes_detectes m ON a.id = m.analyse_id
-        WHERE a.rayon = ? 
-        AND (a.produit = ? OR a.produit LIKE ?)
-        AND a.non_conforme = 1
-        AND a.date_analyse_systeme > ?
+        SELECT COUNT(*) FROM analyses
+        WHERE rayon = ? 
+        AND (produit = ? OR produit LIKE ?)
+        AND non_conforme = 1
+        AND date_analyse_systeme > ?
     """, (rayon, produit, f"%{produit}%", trois_mois_avant))
     
     nb_incidents = cursor.fetchone()[0]
     
-    # Déterminer le niveau de surveillance
     if nb_incidents == 0:
-        frequence = 1
-        statut = 'NORMAL'
+        frequence, statut = 1, 'NORMAL'
     elif nb_incidents == 1:
-        frequence = 2
-        statut = 'RENFORCE'
+        frequence, statut = 2, 'RENFORCE'
     elif nb_incidents == 2:
-        frequence = 4
-        statut = 'TRES RENFORCE'
+        frequence, statut = 4, 'TRES RENFORCE'
     else:
-        frequence = 8
-        statut = 'CRISE'
+        frequence, statut = 8, 'CRISE'
     
     if existing:
         cursor.execute("""
@@ -175,7 +158,6 @@ def _mettre_a_jour_plan_surveillance(cursor, rayon: str, produit: str, plan_acti
               nb_incidents, statut, datetime.now().isoformat()))
 
 def get_historique_analyses(limit: int = 50) -> List[Dict]:
-    """Récupère l'historique des analyses"""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -190,8 +172,23 @@ def get_historique_analyses(limit: int = 50) -> List[Dict]:
     conn.close()
     return resultats
 
+def get_analyses_par_fichier(fichier_pdf: str) -> List[Dict]:
+    """Récupère toutes les analyses d'un fichier spécifique"""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT * FROM analyses
+        WHERE fichier_pdf = ?
+        ORDER BY date_analyse_systeme DESC
+    """, (fichier_pdf,))
+    
+    resultats = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return resultats
+
 def get_plan_surveillance_actuel() -> List[Dict]:
-    """Récupère le plan de surveillance actuel adapté"""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -213,7 +210,6 @@ def get_plan_surveillance_actuel() -> List[Dict]:
     return resultats
 
 def get_statistiques_generales() -> Dict:
-    """Calcule les statistiques générales"""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
@@ -254,8 +250,5 @@ def get_statistiques_generales() -> Dict:
         'microbes_frequents': microbes_frequents
     }
 
-# Initialiser la base au chargement
-if os.path.exists(DB_PATH):
-    pass
-else:
+if not os.path.exists(DB_PATH):
     init_database()

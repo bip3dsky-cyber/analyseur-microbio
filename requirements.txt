@@ -3,5 +3,3 @@ pdfplumber
 requests
 pandas
 plotly
-fpdf2
-matplotlib
